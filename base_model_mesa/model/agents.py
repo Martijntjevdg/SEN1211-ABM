@@ -39,6 +39,7 @@ class Households(Agent):
             self.flood_depth_estimated = 0
         
         # calculate the estimated flood damage given the estimated flood depth. Flood damage is a factor between 0 and 1
+        # ook in deze regel kunnen we adaptation toevoegen en van de flood_depth_estimated afhalen
         self.flood_damage_estimated = calculate_basic_flood_damage(flood_depth=self.flood_depth_estimated)
 
         # Add an attribute for the actual flood depth. This is set to zero at the beginning of the simulation since there is not flood yet
@@ -46,6 +47,7 @@ class Households(Agent):
         self.flood_depth_actual = 0
         
         #calculate the actual flood damage given the actual flood depth. Flood damage is a factor between 0 and 1
+        #In deze regel zouden we de adaptation van de actual flood depth af kunnen halen om te kijken hoeveel damage er is
         self.flood_damage_actual = calculate_basic_flood_damage(flood_depth=self.flood_depth_actual)
     
     # Function to count friends who can be influencial.
