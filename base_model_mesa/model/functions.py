@@ -117,7 +117,15 @@ def get_flood_depth(corresponding_map, location, band):
     row, col = corresponding_map.index(location.x, location.y)
     depth = band[row -1, col -1]
     return depth
-    
+
+
+def adaptation_decision(risk):
+    return
+
+
+# This function determines the new flood depth based on if an agent has decided to adapt or not.
+def get_adapted_flood_depth(is_adapted,flood_depth_estimated,adaptation_effectivity):
+    return #...r
 
 def get_position_flood(bound_l, bound_r, bound_t, bound_b, img, seed):
     """ 
