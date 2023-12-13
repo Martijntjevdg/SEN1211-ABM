@@ -118,6 +118,8 @@ def get_flood_depth(corresponding_map, location, band):
     depth = band[row -1, col -1]
     return depth
 
+#Function to determine risk_perception
+
 
 def adaptation_decision(risk):
     return
@@ -162,12 +164,13 @@ def calculate_basic_flood_damage(flood_depth):
     -------
     flood_damage : damage factor between 0 and 1
     """
+    #Multiply flood_damage with average price in euro's per m2. Housesize is per agent in m2, to make sure
     if flood_depth >= 6:
-        flood_damage = 1
+        flood_damage = 1 * 788 * housesize
     elif flood_depth < 0.025:
         flood_damage = 0
     else:
         # see flood_damage.xlsx for function generation
-        flood_damage = 0.1746 * math.log(flood_depth) + 0.6483
+        flood_damage = (0.1746 * math.log(flood_depth) + 0.6483) * 788 * housesize
     return flood_damage
 

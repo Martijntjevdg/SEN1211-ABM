@@ -22,7 +22,7 @@ class Households(Agent):
         self.savings = 0 #nog even baseren op gemiddelde savings in harris county
         self.housesize = 0 #nog even een random range geven
         self.household_damage = 0
-        self.flood_perception = randint(1,4) #Provide agent discrete opinion category. (1: wappie, 2: ..)
+        self.network_perception = randint(1,4) #Provide agent discrete opinion category. (1: wappie, 2: ..)
         # getting flood map values
         # Get a random location on the map
         loc_x, loc_y = generate_random_location_within_map_domain()
@@ -63,6 +63,7 @@ class Households(Agent):
         # Logic for adaptation based on estimated flood damage and a random chance.
         # These conditions are examples and should be refined for real-world applications.
         if self.flood_damage_estimated > 0.15 and random.random() < 0.2:
+            #choose adaptation based on savings 
             self.is_adapted = True  # Agent adapts to flooding
         
 # Define the Government agent class
