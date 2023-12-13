@@ -21,6 +21,7 @@ class Households(Agent):
         self.is_adapted = False  # Initial adaptation status set to False
         self.savings = 0 #nog even baseren op gemiddelde savings in harris county
         self.housesize = 0 #nog even een random range geven
+        self.adaptation_depth = 0
         self.household_damage = 0
         self.network_perception = randint(1,4) #Provide agent discrete opinion category. (1: wappie, 2: ..)
         # getting flood map values
@@ -52,12 +53,29 @@ class Households(Agent):
         #calculate the actual flood damage given the actual flood depth. Flood damage is a factor between 0 and 1
         #In deze regel zouden we de adaptation van de actual flood depth af kunnen halen om te kijken hoeveel damage er is
         self.flood_damage_actual = calculate_basic_flood_damage(flood_depth=self.flood_depth_actual)
-    
+
     # Function to count friends who can be influencial.
     def count_friends(self, radius):
         """Count the number of neighbors within a given radius (number of edges away). This is social relation and not spatial"""
         friends = self.model.grid.get_neighborhood(self.pos, include_center=False, radius=radius)
         return len(friends)
+
+    def decide_to_adapt(self):
+        if self.flood_damage_estimated > 95000 and self.network_perception == 3:
+            is_adapted = True
+        #Here we can add which adaptation measure they decide to take (1: sandbags, 2: drain plugs, 3: heigthening)
+
+    def calculate_adaptation_depth(self):
+        if self.is_adapted == False:
+            return
+
+        # For adaptation measure 1 (sandbags)
+        if self.savings > 5000:
+            self.adaptation_depth = 0.1
+
+    def calculate_adapted_depth(self):
+        self.flood_depth_estimated = self.flood_damage_estimated - self.adaptation_depth
+        return self.flood_depth_estimated
 
     def step(self):
         # Logic for adaptation based on estimated flood damage and a random chance.
