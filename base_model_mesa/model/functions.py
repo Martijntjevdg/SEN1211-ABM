@@ -11,6 +11,8 @@ import math
 from shapely import contains_xy
 from shapely import prepare
 import geopandas as gpd
+import os
+
 
 def set_initial_values(input_data, parameter, seed):
     """
@@ -19,7 +21,7 @@ def set_initial_values(input_data, parameter, seed):
     
     Parameters
     ----------
-    input_data: the dataframe containing the distribution of paramters
+    input_data: the dataframe containing the distribution of parameters
     parameter: parameter name that is to be set
     seed: agent's seed
     
@@ -28,17 +30,19 @@ def set_initial_values(input_data, parameter, seed):
     parameter_set: the value that is set for a certain agent for the specified parameter 
     """
     parameter_set = 0
-    parameter_data = input_data.loc[(input_data.parameter == parameter)] # get the distribution of values for the specified parameter
+    parameter_data = input_data.loc[
+        (input_data.parameter == parameter)]  # get the distribution of values for the specified parameter
     parameter_data = parameter_data.reset_index()
     random.seed(seed)
-    random_parameter = random.randint(0,100) 
+    random_parameter = random.randint(0, 100)
     for i in range(len(parameter_data)):
         if i == 0:
             if random_parameter < parameter_data['value_for_input'][i]:
                 parameter_set = parameter_data['value'][i]
                 break
         else:
-            if (random_parameter >= parameter_data['value_for_input'][i-1]) and (random_parameter <= parameter_data['value_for_input'][i]):
+            if (random_parameter >= parameter_data['value_for_input'][i - 1]) and (
+                    random_parameter <= parameter_data['value_for_input'][i]):
                 parameter_set = parameter_data['value'][i]
                 break
             else:
@@ -65,6 +69,7 @@ def get_flood_map_data(flood_map):
     bound_b = flood_map.bounds.bottom
     return band, bound_l, bound_r, bound_t, bound_b
 
+
 shapefile_path = r'../input_data/model_domain/houston_model/houston_model.shp'
 floodplain_path = r'../input_data/floodplain/floodplain_area.shp'
 
@@ -83,6 +88,7 @@ floodplain_geoseries = floodplain_gdf['geometry']
 floodplain_multipolygon = floodplain_geoseries[0]  # The geoseries contains only one multipolygon
 prepare(floodplain_multipolygon)
 
+
 def generate_random_location_within_map_domain():
     """
     Generate random location coordinates within the map domain polygon.
@@ -98,6 +104,7 @@ def generate_random_location_within_map_domain():
         # check if the point is within the polygon, if so, return the coordinates
         if contains_xy(map_domain_polygon, x, y):
             return x, y
+
 
 def get_flood_depth(corresponding_map, location, band):
     """ 
@@ -115,19 +122,8 @@ def get_flood_depth(corresponding_map, location, band):
     depth: flood depth at the given location
     """
     row, col = corresponding_map.index(location.x, location.y)
-    depth = band[row -1, col -1]
+    depth = band[row - 1, col - 1]
     return depth
-
-#Function to determine risk_perception
-
-
-def adaptation_decision(risk):
-    return
-
-
-# This function determines the new flood depth based on if an agent has decided to adapt or not.
-def get_adapted_flood_depth(is_adapted,flood_depth_estimated,adaptation_effectivity):
-    return #...r
 
 def get_position_flood(bound_l, bound_r, bound_t, bound_b, img, seed):
     """ 
@@ -150,7 +146,8 @@ def get_position_flood(bound_l, bound_r, bound_t, bound_b, img, seed):
     row, col = img.index(x, y)
     return x, y, row, col
 
-def calculate_basic_flood_damage(flood_depth):
+
+def calculate_basic_flood_damage(flood_depth, housesize):
     """
     To get flood damage based on flood depth of household
     from de Moer, Huizinga (2017) with logarithmic regression over it.
@@ -164,7 +161,7 @@ def calculate_basic_flood_damage(flood_depth):
     -------
     flood_damage : damage factor between 0 and 1
     """
-    #Multiply flood_damage with average price in euro's per m2. Housesize is per agent in m2, to make sure
+    # Multiply flood_damage with average price in euro's per m2. Housesize is per agent in m2, to make sure
     if flood_depth >= 6:
         flood_damage = 1 * 788 * housesize
     elif flood_depth < 0.025:
@@ -172,5 +169,41 @@ def calculate_basic_flood_damage(flood_depth):
     else:
         # see flood_damage.xlsx for function generation
         flood_damage = (0.1746 * math.log(flood_depth) + 0.6483) * 788 * housesize
+    print(flood_damage)
     return flood_damage
 
+def calculate_network_perception():
+    #Er wordt een variabele friends aangemaakt in de functie count_friends
+    #Kan ik hier het berekenen van de network_perception aan toevoegen?
+    #Waarschijnlijk is het een list aan friends waar je vervolgens de network_perception van kan opvragen
+    #Maar het lukt me niet om dat nu te controleren omdat ik moeite heb code te runnen in Pycharm
+    return
+
+
+def decide_to_adapt(flood_damage_estimated, network_perception, is_adapted):
+    if flood_damage_estimated > 95000 and network_perception == 3:
+        is_adapted = True
+    print(is_adapted)
+    return is_adapted
+
+
+#De functie hieronder kunnen we uitbouwen onderbouwd met een diagram die de keuze van een household weergeeft
+#Mag alles zijn: savings threshold, housesize, perception, alles kan er in gestopt worden
+#Maar hier kan ik de wiskunde laten kloppen en testen met Testing.py
+def choose_adaptation(savings, adaptation_depth, is_adapted):
+    if is_adapted == False:
+        return
+    else:
+        if savings > 0 and savings < 1000: #Option 1: place sandbags to reduce flood_depth with half a meter
+            adaptation_depth = 0.5
+        if savings >= 1000 and savings < 2000: #Option 2: clear the drains around and in your house to reduce flood_depth with a meter
+            adaptation_depth = 1
+        if savings >= 2000: #Option 3: heighten your house by 3 meter to reduce flood_depth accordingly
+            adaptation_depth = 3
+    print(adaptation_depth)
+    return adaptation_depth
+
+def calculate_adapted_flood_depth(estimated_flood_depth, adaptation_depth):
+    adapted_flood_depth = estimated_flood_depth - adaptation_depth
+    print(adapted_flood_depth)
+    return adapted_flood_depth

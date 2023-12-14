@@ -178,7 +178,7 @@ class AdaptationModel(Model):
         at time step 5, there will be a global flooding.
         This will result in actual flood depth. Here, we assume it is a random number
         between 0.5 and 1.2 of the estimated flood depth. In your model, you can replace this
-        with a more sound procedure (e.g., you can devide the floop map into zones and 
+        with a more sound procedure (e.g., you can divide the flood map into zones and
         assume local flooding instead of global flooding). The actual flood depth can be 
         estimated differently
         """

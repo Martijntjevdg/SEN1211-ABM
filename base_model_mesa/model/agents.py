@@ -4,6 +4,7 @@ from mesa import Agent
 from shapely.geometry import Point
 from shapely import contains_xy
 
+
 # Import functions from functions.py
 from functions import generate_random_location_within_map_domain, get_flood_depth, calculate_basic_flood_damage, floodplain_multipolygon
 
@@ -23,7 +24,8 @@ class Households(Agent):
         self.housesize = 0 #nog even een random range geven
         self.adaptation_depth = 0
         self.household_damage = 0
-        self.network_perception = randint(1,4) #Provide agent discrete opinion category. (1: wappie, 2: ..)
+        # Provide agent discrete opinion category. (1: wappie, 2: ..)
+        self.network_perception = random.randint(1,4)
         # getting flood map values
         # Get a random location on the map
         loc_x, loc_y = generate_random_location_within_map_domain()
@@ -49,40 +51,23 @@ class Households(Agent):
         # Add an attribute for the actual flood depth. This is set to zero at the beginning of the simulation since there is not flood yet
         # and will update its value when there is a shock (i.e., actual flood). Shock happens at some point during the simulation
         self.flood_depth_actual = 0
-        
         #calculate the actual flood damage given the actual flood depth. Flood damage is a factor between 0 and 1
         #In deze regel zouden we de adaptation van de actual flood depth af kunnen halen om te kijken hoeveel damage er is
         self.flood_damage_actual = calculate_basic_flood_damage(flood_depth=self.flood_depth_actual)
 
-    # Function to count friends who can be influencial.
+    # Function to count friends who can be influential.
     def count_friends(self, radius):
         """Count the number of neighbors within a given radius (number of edges away). This is social relation and not spatial"""
         friends = self.model.grid.get_neighborhood(self.pos, include_center=False, radius=radius)
         return len(friends)
-
-    def decide_to_adapt(self):
-        if self.flood_damage_estimated > 95000 and self.network_perception == 3:
-            is_adapted = True
-        #Here we can add which adaptation measure they decide to take (1: sandbags, 2: drain plugs, 3: heigthening)
-
-    def calculate_adaptation_depth(self):
-        if self.is_adapted == False:
-            return
-
-        # For adaptation measure 1 (sandbags)
-        if self.savings > 5000:
-            self.adaptation_depth = 0.1
-
-    def calculate_adapted_depth(self):
-        self.flood_depth_estimated = self.flood_damage_estimated - self.adaptation_depth
-        return self.flood_depth_estimated
 
     def step(self):
         # Logic for adaptation based on estimated flood damage and a random chance.
         # These conditions are examples and should be refined for real-world applications.
         if self.flood_damage_estimated > 0.15 and random.random() < 0.2:
             #choose adaptation based on savings 
-            self.is_adapted = True  # Agent adapts to flooding
+          self.is_adapted = True  # Agent adapts to flooding
+        self.decide_to_adapt()
         
 # Define the Government agent class
 class Government(Agent):
@@ -97,3 +82,4 @@ class Government(Agent):
         pass
 
 # More agent classes can be added here, e.g. for insurance agents.
+
