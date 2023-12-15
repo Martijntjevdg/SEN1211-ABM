@@ -202,6 +202,7 @@ def decide_to_adapt(flood_damage_estimated, own_flood_perception, adaptation_dep
 
 def calculate_optimal_adaptation_measure(savings, housesize, optimal_adaptation_measure):
     adaptation_measures = {'Sandbags': [0.5, 1], 'Drains': [1, 10], 'Heightening': [3, 5000]}
+    #{'Measure': [adaptation_depth, costs per m2]}
     print(adaptation_measures['Heightening'][1])
     #Berekening
 
