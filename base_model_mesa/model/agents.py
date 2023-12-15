@@ -24,8 +24,10 @@ class Households(Agent):
         self.housesize = 0 #nog even een random range geven
         self.adaptation_depth = 0
         self.household_damage = 0
+        self.optimal_adaptation_measure = None
         # Provide agent discrete opinion category. (1: wappie, 2: ..)
-        self.network_perception = random.randint(1,4)
+        self.network_flood_perception = random.randint(1,4)
+        self.own_flood_perception = random.randint(1,4)
         # getting flood map values
         # Get a random location on the map
         loc_x, loc_y = generate_random_location_within_map_domain()

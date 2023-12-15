@@ -172,26 +172,45 @@ def calculate_basic_flood_damage(flood_depth, housesize):
     print(flood_damage)
     return flood_damage
 
-def calculate_network_perception():
+def calculate_network_flood_perception():
     #Er wordt een variabele friends aangemaakt in de functie count_friends
     #Kan ik hier het berekenen van de network_perception aan toevoegen?
     #Waarschijnlijk is het een list aan friends waar je vervolgens de network_perception van kan opvragen
     #Maar het lukt me niet om dat nu te controleren omdat ik moeite heb code te runnen in Pycharm
+
+    #Two options for output: one variable that is decided on the highest number present
+    #Or: dictionary that counts every value in the network, to change you take the highest value in the dictionary
     return
 
+def change_own_flood_perception(own_flood_perception, network_flood_perception):
+    #These variables are random integers between 1 and 3 at the moment
+    if network_flood_perception != own_flood_perception:
+        own_flood_perception = network_flood_perception
+    print(own_flood_perception)
+    return own_flood_perception
 
-def decide_to_adapt(flood_damage_estimated, network_perception, is_adapted):
-    if flood_damage_estimated > 95000 and network_perception == 3:
-        is_adapted = True
-    print(is_adapted)
-    return is_adapted
+
+def decide_to_adapt(flood_damage_estimated, own_flood_perception, adaptation_depth, going_to_adapt):
+    if adaptation_depth == 3:
+        going_to_adapt = False
+        return going_to_adapt
+
+    if flood_damage_estimated > 95000 and own_flood_perception == 3:
+        going_to_adapt = True
+    print(going_to_adapt)
+    return going_to_adapt
+
+def calculate_optimal_adaptation_measure(savings, housesize, optimal_adaptation_measure):
+    adaptation_measures = {'Sandbags': [0.5, 1], 'Drains': [1, 10], 'Heightening': [3, 5000]}
+    print(adaptation_measures['Heightening'][1])
+    #Berekening
 
 
 #De functie hieronder kunnen we uitbouwen onderbouwd met een diagram die de keuze van een household weergeeft
 #Mag alles zijn: savings threshold, housesize, perception, alles kan er in gestopt worden
 #Maar hier kan ik de wiskunde laten kloppen en testen met Testing.py
-def choose_adaptation(savings, adaptation_depth, is_adapted):
-    if is_adapted == False:
+def choose_adaptation(savings, adaptation_depth, going_to_adapt):
+    if going_to_adapt == False:
         return
     else:
         if savings > 0 and savings < 1000: #Option 1: place sandbags to reduce flood_depth with half a meter
