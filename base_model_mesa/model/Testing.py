@@ -24,6 +24,7 @@ class Household():
         self.income = self.calculate_income()
         self.housesize = self.assign_housesize()
         self.going_to_adapt = True
+        self.adaptation_depth = 0
 
     def assign_income_label(self):
         # Define the distribution of labels and their probabilities
@@ -39,13 +40,14 @@ class Household():
                 return income_label
 
     def show_income_label(self):
-        print(self.income_label)
-        print(self.income)
-        print(self.housesize)
+        print("Income label =", self.income_label)
+        print("Income =", self.income)
+        print("Housesize =", self.housesize)
 
     def calculate_income(self):
         income_distribution = {'Poor': [5000, 1875], 'Middle-Class': [29375, 10312], 'Rich': [87500, 18750]}
         #income_distribution = 'Label': [mean, standard_deviation]
+        #Income is per tick which is quarter of a year
 
         income = round(random.normalvariate(income_distribution[self.income_label][0],
                                             income_distribution[self.income_label][1]))
@@ -63,4 +65,5 @@ class Household():
 h1 = Household()
 h1.show_income_label()
 
-choose_adaptation(h1.income, h1.housesize, h1.going_to_adapt)
+choose_adaptation(h1.income, h1.housesize, h1.income_label, h1.going_to_adapt, h1.adaptation_depth, is_adapted=False)
+
