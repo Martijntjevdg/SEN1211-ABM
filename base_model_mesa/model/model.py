@@ -26,7 +26,7 @@ class AdaptationModel(Model):
 
     def __init__(self, 
                  seed = None,
-                 number_of_households = 25, # number of household agents
+                 number_of_households = 1, # number of household agents
                  # Simplified argument for choosing flood map. Can currently be "harvey", "100yr", or "500yr".
                  flood_map_choice='harvey',
                  # ### network related parameters ###

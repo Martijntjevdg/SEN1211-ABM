@@ -169,7 +169,7 @@ def calculate_basic_flood_damage(flood_depth, housesize):
     else:
         # see flood_damage.xlsx for function generation
         flood_damage = (0.1746 * math.log(flood_depth) + 0.6483) * 788 * housesize
-    print(flood_damage)
+    #print(flood_damage)
     return flood_damage
 
 def calculate_network_flood_perception():
@@ -180,13 +180,14 @@ def calculate_network_flood_perception():
 
     #Two options for output: one variable that is decided on the highest number present
     #Or: dictionary that counts every value in the network, to change you take the highest value in the dictionary
+
     return
 
 def change_own_flood_perception(own_flood_perception, network_flood_perception):
     #These variables are random integers between 1 and 3 at the moment
     if network_flood_perception != own_flood_perception:
         own_flood_perception = network_flood_perception
-    print(own_flood_perception)
+    #print(own_flood_perception)
     return own_flood_perception
 
 
@@ -197,7 +198,7 @@ def decide_to_adapt(flood_damage_estimated, own_flood_perception, adaptation_dep
 
     if flood_damage_estimated > 95000 and own_flood_perception == 3:
         going_to_adapt = True
-    print(going_to_adapt)
+    #print(going_to_adapt)
     return going_to_adapt
 
 
@@ -220,26 +221,26 @@ def choose_adaptation(income, housesize, income_label, going_to_adapt, adaptatio
             #Spendable income is calculated as a percentage of yearly income (4 ticks) per m2
             #This spendable_income is later used to decide whether or not a certain adaptation measure is chosen
             spendable_income = (income/housesize)*4*0.10
-            print(spendable_income)
+            #print(spendable_income)
             #This if sequence kicks off the decision making process
             #The assumption is that agents always decide to go for the highest number of adaptation_depth if they can afford it
             #So, the agent first checks if it has enough spendable income for the best adaptation measure, heightening.
             if spendable_income >= adaptation_measures['Heightening'][1]:
                 adaptation_depth = adaptation_measures['Heightening'][0]
                 is_adapted = True
-                print(adaptation_depth)
+                #print(adaptation_depth)
                 return adaptation_depth
             #If they do not have enough spendable income, they check if they have enough to unplug the drains
             elif spendable_income >= adaptation_measures['Drains'][1]:
                 adaptation_depth = adaptation_measures['Drains'][0]
                 is_adapted = True
-                print(adaptation_depth)
+                #print(adaptation_depth)
                 return adaptation_depth
             #If they do not have enough spendable income again, they check if they have enough to place sandbags
             elif spendable_income >= adaptation_measures['Sandbags'][1]:
                 adaptation_depth = adaptation_measures['Sandbags'][0]
                 is_adapted = True
-                print(adaptation_depth)
+                #print(adaptation_depth)
                 return adaptation_depth
             #When they have no money for any adaptation measure, adaptation_depth remains the initial value of 0
             else:
@@ -249,49 +250,49 @@ def choose_adaptation(income, housesize, income_label, going_to_adapt, adaptatio
         #Note that the percentage used to calculate the spendable income differs between the income_labels
         if income_label == 'Middle-Class': #Option 1: place sandbags to reduce flood_depth with half a meter
             spendable_income = (income/housesize)*4*0.25
-            print(spendable_income)
+            #print(spendable_income)
             if spendable_income >= adaptation_measures['Heightening'][1]:
                 adaptation_depth = adaptation_measures['Heightening'][0]
                 is_adapted = True
-                print(adaptation_depth)
+                #print(adaptation_depth)
                 return adaptation_depth
             elif spendable_income >= adaptation_measures['Drains'][1]:
                 adaptation_depth = adaptation_measures['Drains'][0]
                 is_adapted = True
-                print(adaptation_depth)
+                #print(adaptation_depth)
                 return adaptation_depth
             elif spendable_income >= adaptation_measures['Sandbags'][1]:
                 adaptation_depth = adaptation_measures['Sandbags'][0]
                 is_adapted = True
-                print(adaptation_depth)
+                #print(adaptation_depth)
                 return adaptation_depth
             else:
-                print(adaptation_depth)
+                #print(adaptation_depth)
                 return adaptation_depth
 
         if income_label == 'Rich':
             spendable_income = (income/housesize)*4*0.50
-            print(spendable_income)
+            #print(spendable_income)
             if spendable_income >= adaptation_measures['Heightening'][1]:
                 adaptation_depth = adaptation_measures['Heightening'][0]
                 is_adapted = True
-                print(adaptation_depth)
+                #print(adaptation_depth)
                 return adaptation_depth
             elif spendable_income >= adaptation_measures['Drains'][1]:
                 adaptation_depth = adaptation_measures['Drains'][0]
                 is_adapted = True
-                print(adaptation_depth)
+                #print(adaptation_depth)
                 return adaptation_depth
             elif spendable_income >= adaptation_measures['Sandbags'][1]:
                 adaptation_depth = adaptation_measures['Sandbags'][0]
                 is_adapted = True
-                print(adaptation_depth)
+                #print(adaptation_depth)
                 return adaptation_depth
             else:
-                print(adaptation_depth)
+                #print(adaptation_depth)
                 return adaptation_depth
 
 def calculate_adapted_flood_depth(estimated_flood_depth, adaptation_depth):
     estimated_flood_depth = estimated_flood_depth - adaptation_depth
-    print(estimated_flood_depth)
+    #print(estimated_flood_depth)
     return estimated_flood_depth

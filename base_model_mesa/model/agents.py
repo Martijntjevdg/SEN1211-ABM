@@ -1,5 +1,6 @@
 # Importing necessary libraries
 import random
+
 from mesa import Agent
 from shapely.geometry import Point
 from shapely import contains_xy
@@ -48,20 +49,31 @@ class Households(Agent):
         
         # calculate the estimated flood damage given the estimated flood depth. Flood damage is a factor between 0 and 1
         # ook in deze regel kunnen we adaptation toevoegen en van de flood_depth_estimated afhalen
-        self.flood_damage_estimated = calculate_basic_flood_damage(flood_depth=self.flood_depth_estimated)
+        self.flood_damage_estimated = calculate_basic_flood_damage(flood_depth=self.flood_depth_estimated, housesize= self.housesize)
 
         # Add an attribute for the actual flood depth. This is set to zero at the beginning of the simulation since there is not flood yet
         # and will update its value when there is a shock (i.e., actual flood). Shock happens at some point during the simulation
         self.flood_depth_actual = 0
         #calculate the actual flood damage given the actual flood depth. Flood damage is a factor between 0 and 1
         #In deze regel zouden we de adaptation van de actual flood depth af kunnen halen om te kijken hoeveel damage er is
-        self.flood_damage_actual = calculate_basic_flood_damage(flood_depth=self.flood_depth_actual)
+        self.flood_damage_actual = calculate_basic_flood_damage(flood_depth=self.flood_depth_actual, housesize = self.housesize)
 
     # Function to count friends who can be influential.
     def count_friends(self, radius):
         """Count the number of neighbors within a given radius (number of edges away). This is social relation and not spatial"""
         friends = self.model.grid.get_neighborhood(self.pos, include_center=False, radius=radius)
+        print(friends)
         return len(friends)
+
+    def calculate_network_flood_perception(self, radius, all_households):
+        friends = self.model.grid.get_neighborhood(self.pos, include_center=False, radius=radius)
+
+        network = {}
+        for friend in friends:
+            network[all_households[friend].unique_id] = all_households[friend].own_flood_perception
+        print(network)
+
+
 
     def step(self):
         # Logic for adaptation based on estimated flood damage and a random chance.
@@ -84,4 +96,3 @@ class Government(Agent):
         pass
 
 # More agent classes can be added here, e.g. for insurance agents.
-
