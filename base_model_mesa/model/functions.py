@@ -200,26 +200,27 @@ def decide_to_adapt(flood_damage_estimated, own_flood_perception, adaptation_dep
     print(going_to_adapt)
     return going_to_adapt
 
-def calculate_optimal_adaptation_measure(savings, housesize, optimal_adaptation_measure):
-    adaptation_measures = {'Sandbags': [0.5, 1], 'Drains': [1, 10], 'Heightening': [3, 5000]}
-    #{'Measure': [adaptation_depth, costs per m2]}
-    print(adaptation_measures['Heightening'][1])
-    #Berekening
 
 
 #De functie hieronder kunnen we uitbouwen onderbouwd met een diagram die de keuze van een household weergeeft
 #Mag alles zijn: savings threshold, housesize, perception, alles kan er in gestopt worden
 #Maar hier kan ik de wiskunde laten kloppen en testen met Testing.py
-def choose_adaptation(savings, adaptation_depth, going_to_adapt):
+def choose_adaptation(income, housesize, going_to_adapt):
+    adaptation_measures = {'Sandbags': [0.5, 5], 'Drains': [1, 30], 'Heightening': [3, 750]}
+    # {'Measure': [adaptation_depth, costs per m2]}
+
     if going_to_adapt == False:
         return
     else:
-        if savings > 0 and savings < 1000: #Option 1: place sandbags to reduce flood_depth with half a meter
+        if income > 0 and income < 5000: #Option 1: place sandbags to reduce flood_depth with half a meter
             adaptation_depth = 0.5
-        if savings >= 1000 and savings < 2000: #Option 2: clear the drains around and in your house to reduce flood_depth with a meter
+            print('Sandbags')
+        if income >= 5000 and income < 40000: #Option 2: clear the drains around and in your house to reduce flood_depth with a meter
             adaptation_depth = 1
-        if savings >= 2000: #Option 3: heighten your house by 3 meter to reduce flood_depth accordingly
+            print('Drains')
+        if income >= 40000: #Option 3: heighten your house by 3 meter to reduce flood_depth accordingly
             adaptation_depth = 3
+            print('Heightening')
     print(adaptation_depth)
     return adaptation_depth
 
