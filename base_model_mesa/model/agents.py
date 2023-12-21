@@ -28,9 +28,7 @@ class Households(Agent):
         self.housesize = self.assign_housesize()
         self.adaptation_depth = 0
         self.household_damage = 0
-        self.optimal_adaptation_measure = None
         # Provide agent discrete opinion category. (1: wappie, 2: ..)
-        self.network_flood_perception = random.randint(1,3)
         self.own_flood_perception = random.randint(1,3)
         # getting flood map values
         # Get a random location on the map
@@ -41,6 +39,9 @@ class Households(Agent):
         self.in_floodplain = False
         if contains_xy(geom=floodplain_multipolygon, x=self.location.x, y=self.location.y):
             self.in_floodplain = True
+
+        #Base the initial flood perception on whether the household is in a floodplain or not
+        self.network_flood_perception = self.initial_own_flood_perception()
 
         # Get the estimated flood depth at those coordinates. 
         # the estimated flood depth is calculated based on the flood map (i.e., past data) so this is not the actual flood depth
@@ -79,7 +80,20 @@ class Households(Agent):
             cumulative_prob += prob
             if rand_num <= cumulative_prob:
                 return income_label
+    def initial_own_flood_perception(self):
+        if self.in_floodplain == True:
+            # Values to choose from
+            options = [1, 2, 3, 4]
 
+            # Probabilities for each option (summing to 1)
+            probabilities = [0.15, 0.25, 0.3, 0.3]
+
+            # Assign a value based on chance
+            flood_perception = random.choices(options, probabilities)[0]
+        else:
+            flood_perception = random.randint(1, 4)
+
+        return flood_perception
     def calculate_income(self):
         income_distribution = {'Poor': [5000, 1875], 'Middle-Class': [29375, 10312], 'Rich': [87500, 18750]}
         #income_distribution = 'Label': [mean, standard_deviation]
