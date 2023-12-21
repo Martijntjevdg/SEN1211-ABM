@@ -1,8 +1,7 @@
 import random
 import numpy as np
 
-from functions import (calculate_basic_flood_damage, decide_to_adapt, choose_adaptation, calculate_adapted_flood_depth,
-                       change_own_flood_perception)
+from functions import (calculate_basic_flood_damage, decide_to_adapt, choose_adaptation, calculate_adapted_flood_depth)
 
 #Hier komt het liefst de functie: calculate_network_perception()
 

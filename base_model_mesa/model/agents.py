@@ -4,6 +4,7 @@ import random
 from mesa import Agent
 from shapely.geometry import Point
 from shapely import contains_xy
+from collections import Counter
 
 
 # Import functions from functions.py
@@ -21,14 +22,16 @@ class Households(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.is_adapted = False  # Initial adaptation status set to False
-        self.savings = 0 #nog even baseren op gemiddelde savings in harris county
-        self.housesize = 0 #nog even een random range geven
+        self.going_to_adapt = False
+        self.income_label = self.assign_income_label()
+        self.income = self.calculate_income()
+        self.housesize = self.assign_housesize()
         self.adaptation_depth = 0
         self.household_damage = 0
         self.optimal_adaptation_measure = None
         # Provide agent discrete opinion category. (1: wappie, 2: ..)
-        self.network_flood_perception = random.randint(1,4)
-        self.own_flood_perception = random.randint(1,4)
+        self.network_flood_perception = random.randint(1,3)
+        self.own_flood_perception = random.randint(1,3)
         # getting flood map values
         # Get a random location on the map
         loc_x, loc_y = generate_random_location_within_map_domain()
@@ -59,22 +62,157 @@ class Households(Agent):
         self.flood_damage_actual = calculate_basic_flood_damage(flood_depth=self.flood_depth_actual, housesize = self.housesize)
 
     # Function to count friends who can be influential.
-    def count_friends(self, radius):
-        """Count the number of neighbors within a given radius (number of edges away). This is social relation and not spatial"""
-        friends = self.model.grid.get_neighborhood(self.pos, include_center=False, radius=radius)
-        print(friends)
-        return len(friends)
+    # def count_friends(self, radius):
+    #     """Count the number of neighbors within a given radius (number of edges away). This is social relation and not spatial"""
+    #     friends = self.model.grid.get_neighborhood(self.pos, include_center=False, radius=radius)
+    #     print(friends)
+    #     return len(friends)
+    def assign_income_label(self):
+        # Define the distribution of labels and their probabilities
+        income_label_distribution = {'Poor': 25.68, 'Middle-Class': 63.76, 'Rich': 10.55}
 
+        # Randomly choose a label based on the distribution
+        rand_num = random.uniform(0, 100)
+        cumulative_prob = 0
+
+        for income_label, prob in income_label_distribution.items():
+            cumulative_prob += prob
+            if rand_num <= cumulative_prob:
+                return income_label
+
+    def calculate_income(self):
+        income_distribution = {'Poor': [5000, 1875], 'Middle-Class': [29375, 10312], 'Rich': [87500, 18750]}
+        #income_distribution = 'Label': [mean, standard_deviation]
+        #Income is per tick which is quarter of a year
+
+        income = round(random.normalvariate(income_distribution[self.income_label][0],
+                                            income_distribution[self.income_label][1]))
+        return income
+
+    def assign_housesize(self):
+        average_household_surfaces = {'Poor': [100, 30], 'Middle-Class': [201.6, 50], 'Rich': [500, 200]}
+
+        household_size = round(random.normalvariate(average_household_surfaces[self.income_label][0],
+                                                 average_household_surfaces[self.income_label][1]))
+        return household_size
     def calculate_network_flood_perception(self, radius, all_households):
         friends = self.model.grid.get_neighborhood(self.pos, include_center=False, radius=radius)
 
         network = {}
         for friend in friends:
             network[all_households[friend].unique_id] = all_households[friend].own_flood_perception
-        print(network)
 
+        value_counts = Counter(network.values())
+        most_common_value, count = value_counts.most_common(1)[0]
+        self.network_flood_perception = most_common_value
+        print(self.network_flood_perception)
+        print('The most common perception in the network is', most_common_value, '. It is found', count, 'times')
 
+    def change_own_flood_perception(self):
+        # These variables are random integers between 1 and 3 at the moment
+        if self.network_flood_perception != self.own_flood_perception:
+            self.own_flood_perception = self.network_flood_perception
+        return self.own_flood_perception
 
+    def decide_to_adapt(self):
+        if self.adaptation_depth != 0:
+            self.going_to_adapt = False
+            return self.going_to_adapt
+
+        if self.flood_damage_estimated > 25000 and self.own_flood_perception == 3:
+            self.going_to_adapt = True
+        return self.going_to_adapt
+
+    def choose_adaptation(self):
+        adaptation_measures = {'Sandbags': [0.5, 5], 'Drains': [1, 30], 'Heightening': [3, 585]}
+        # {'Measure': [adaptation_depth, costs per m2]}
+        # Assumptions and calculations on costs in Appendix ...
+
+        if self.going_to_adapt == False:
+            # If the agent has not decided to adapt, this function will end here.
+            return
+        else:
+            # For every income_label, there is a different percentage of spendable income
+            # The choice for this is elaborated in section ... of the report
+            if self.income_label == 'Poor':
+                # Spendable income is calculated as a percentage of yearly income (4 ticks) per m2
+                # This spendable_income is later used to decide whether or not a certain adaptation measure is chosen
+                spendable_income = (self.income / self.housesize) * 4 * 0.10
+                print(spendable_income)
+                # This if sequence kicks off the decision making process
+                # The assumption is that agents always decide to go for the highest number of adaptation_depth if they can afford it
+                # So, the agent first checks if it has enough spendable income for the best adaptation measure, heightening.
+                if spendable_income >= adaptation_measures['Heightening'][1]:
+                    self.adaptation_depth = adaptation_measures['Heightening'][0]
+                    self.is_adapted = True
+                    print(self.adaptation_depth)
+                    return self.adaptation_depth
+                # If they do not have enough spendable income, they check if they have enough to unplug the drains
+                elif spendable_income >= adaptation_measures['Drains'][1]:
+                    self.adaptation_depth = adaptation_measures['Drains'][0]
+                    self.is_adapted = True
+                    print(self.adaptation_depth)
+                    return self.adaptation_depth
+                # If they do not have enough spendable income again, they check if they have enough to place sandbags
+                elif spendable_income >= adaptation_measures['Sandbags'][1]:
+                    self.adaptation_depth = adaptation_measures['Sandbags'][0]
+                    self.is_adapted = True
+                    print(self.adaptation_depth)
+                    return self.adaptation_depth
+                # When they have no money for any adaptation measure, adaptation_depth remains the initial value of 0
+                else:
+                    return self.adaptation_depth
+
+            # The same structure as elaborated in comments above, is also used for the other two income_labels
+            # Note that the percentage used to calculate the spendable income differs between the income_labels
+            if self.income_label == 'Middle-Class':  # Option 1: place sandbags to reduce flood_depth with half a meter
+                spendable_income = (self.income / self.housesize) * 4 * 0.25
+                print(spendable_income)
+                if spendable_income >= adaptation_measures['Heightening'][1]:
+                    self.adaptation_depth = adaptation_measures['Heightening'][0]
+                    self.is_adapted = True
+                    print(self.adaptation_depth)
+                    return self.adaptation_depth
+                elif spendable_income >= adaptation_measures['Drains'][1]:
+                    self.adaptation_depth = adaptation_measures['Drains'][0]
+                    self.is_adapted = True
+                    print(self.adaptation_depth)
+                    return self.adaptation_depth
+                elif spendable_income >= adaptation_measures['Sandbags'][1]:
+                    self.adaptation_depth = adaptation_measures['Sandbags'][0]
+                    self.is_adapted = True
+                    print(self.adaptation_depth)
+                    return self.adaptation_depth
+                else:
+                    print(self.adaptation_depth)
+                    return self.adaptation_depth
+
+            if self.income_label == 'Rich':
+                spendable_income = (self.income / self.housesize) * 4 * 0.50
+                print(spendable_income)
+                if spendable_income >= adaptation_measures['Heightening'][1]:
+                    self.adaptation_depth = adaptation_measures['Heightening'][0]
+                    self.is_adapted = True
+                    print(self.adaptation_depth)
+                    return self.adaptation_depth
+                elif spendable_income >= adaptation_measures['Drains'][1]:
+                    self.adaptation_depth = adaptation_measures['Drains'][0]
+                    self.is_adapted = True
+                    print(self.adaptation_depth)
+                    return self.adaptation_depth
+                elif spendable_income >= adaptation_measures['Sandbags'][1]:
+                    self.adaptation_depth = adaptation_measures['Sandbags'][0]
+                    self.is_adapted = True
+                    print(self.adaptation_depth)
+                    return self.adaptation_depth
+                else:
+                    print(self.adaptation_depth)
+                    return self.adaptation_depth
+
+    def calculate_adapted_flood_depth(self):
+        self.flood_depth_estimated = self.flood_depth_estimated - self.adaptation_depth
+        # print(estimated_flood_depth)
+        return self.flood_depth_estimated
     def step(self):
         # Logic for adaptation based on estimated flood damage and a random chance.
         # These conditions are examples and should be refined for real-world applications.

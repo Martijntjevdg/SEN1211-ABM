@@ -70,8 +70,8 @@ class AdaptationModel(Model):
             self.schedule.add(household)
             self.grid.place_agent(agent=household, node_id=node)
 
-        # You might want to create other agents here, e.g. insurance agents.
-
+        # The next line creates the all_households variable, which is used to calculate the network_flood_perception
+        self.all_households = self.schedule.agents
         # Data collection setup to collect data
         model_metrics = {
                         "total_adapted_households": self.total_adapted_households,
@@ -148,7 +148,7 @@ class AdaptationModel(Model):
         #BE CAREFUL THAT YOU MAY HAVE DIFFERENT AGENT TYPES SO YOU NEED TO FIRST CHECK IF THE AGENT IS ACTUALLY A HOUSEHOLD AGENT USING "ISINSTANCE"
         adapted_count = sum([1 for agent in self.schedule.agents if isinstance(agent, Households) and agent.is_adapted])
         return adapted_count
-    
+
     def plot_model_domain_with_agents(self):
         fig, ax = plt.subplots()
         # Plot the model domain
