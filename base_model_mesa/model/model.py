@@ -86,8 +86,11 @@ class AdaptationModel(Model):
                         "IsAdapted": "is_adapted",
                         "AdaptationDepth":"adaptation_depth",
                         "location":"location",
+                        "HouseSize":'housesize',
                         "Income":"income",
                         "IncomeLabel":"income_label",
+                        "Savings":"savings",
+                        "OptimalMeasure":"optimal_measure",
                         "OwnFloodPerception":"own_flood_perception",
                         "NetworkPerception":"network_flood_perception"
                         # ... other reporters ...

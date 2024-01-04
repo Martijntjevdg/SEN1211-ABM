@@ -25,9 +25,11 @@ class Households(Agent):
         self.going_to_adapt = False
         self.income_label = self.assign_income_label()
         self.income = self.calculate_income()
+        self.savings = 0
         self.housesize = self.assign_housesize()
         self.adaptation_depth = 0
         self.household_damage = 0
+        self.optimal_measure = 'None'
 
         # getting flood map values
         # Get a random location on the map
@@ -128,88 +130,112 @@ class Households(Agent):
         if self.network_flood_perception != self.own_flood_perception:
             self.own_flood_perception = self.network_flood_perception
         return self.own_flood_perception
+    def income_to_savings(self):
+        self.savings += 0.1*self.income
 
     def decide_to_adapt(self):
-        if self.adaptation_depth != 0:
-            self.going_to_adapt = False
-            return self.going_to_adapt
+        if self.own_flood_perception == 2:
+            if self.flood_depth_estimated > 1.5:
+                self.optimal_measure = 'Sandbags'
+            else:
+                self.optimal_measure = 'None'
 
-        if self.flood_damage_estimated > 4*self.income and self.own_flood_perception == 4:
-            print('Yeah')
-            self.going_to_adapt = True
-        return self.going_to_adapt
+
+        if self.own_flood_perception == 3 and 0.5 < self.flood_depth_estimated < 1.5:
+            self.optimal_measure = 'Sandbags'
+
+        if self.own_flood_perception == 3 and 1.5 < self.flood_depth_estimated < 3.5:
+            self.optimal_measure = 'Drains'
+
+        if self.own_flood_perception == 3 and self.flood_depth_estimated > 3.5:
+            self.optimal_measure = 'Heightening'
+
+        if self.own_flood_perception == 4 and 0.2 < self.flood_depth_estimated < 0.7:
+            self.optimal_measure = 'Sandbags'
+
+        if self.own_flood_perception == 4 and 0.7 < self.flood_depth_estimated < 2.5:
+            self.optimal_measure = 'Drains'
+
+        if self.own_flood_perception == 4 and self.flood_depth_estimated > 2.5:
+            self.optimal_measure = 'Heightening'
 
     def choose_adaptation(self):
         adaptation_measures = {'Sandbags': [0.5, 5], 'Drains': [1, 30], 'Heightening': [3, 585]}
         # {'Measure': [adaptation_depth, costs per m2]}
         # Assumptions and calculations on costs in Appendix ...
 
-        if self.going_to_adapt == False:
+        if self.optimal_measure == 'None':
             # If the agent has not decided to adapt, this function will end here.
             return
+
         else:
-            # For every income_label, there is a different percentage of spendable income
-            # The choice for this is elaborated in section ... of the report
-            if self.income_label == 'Poor':
-                # Spendable income is calculated as a percentage of yearly income (4 ticks) per m2
-                # This spendable_income is later used to decide whether or not a certain adaptation measure is chosen
-                spendable_income = (self.income / self.housesize) * 4 * 0.10
-                # This if sequence kicks off the decision making process
-                # The assumption is that agents always decide to go for the highest number of adaptation_depth if they can afford it
-                # So, the agent first checks if it has enough spendable income for the best adaptation measure, heightening.
-                if spendable_income >= adaptation_measures['Heightening'][1]:
-                    self.adaptation_depth = adaptation_measures['Heightening'][0]
-                    self.is_adapted = True
-                    return self.adaptation_depth
-                # If they do not have enough spendable income, they check if they have enough to unplug the drains
-                elif spendable_income >= adaptation_measures['Drains'][1]:
-                    self.adaptation_depth = adaptation_measures['Drains'][0]
-                    self.is_adapted = True
-                    return self.adaptation_depth
-                # If they do not have enough spendable income again, they check if they have enough to place sandbags
-                elif spendable_income >= adaptation_measures['Sandbags'][1]:
-                    self.adaptation_depth = adaptation_measures['Sandbags'][0]
-                    self.is_adapted = True
-                    return self.adaptation_depth
-                # When they have no money for any adaptation measure, adaptation_depth remains the initial value of 0
-                else:
-                    return self.adaptation_depth
-
-            # The same structure as elaborated in comments above, is also used for the other two income_labels
-            # Note that the percentage used to calculate the spendable income differs between the income_labels
-            if self.income_label == 'Middle-Class':  # Option 1: place sandbags to reduce flood_depth with half a meter
-                spendable_income = (self.income / self.housesize) * 4 * 0.25
-                if spendable_income >= adaptation_measures['Heightening'][1]:
-                    self.adaptation_depth = adaptation_measures['Heightening'][0]
-                    self.is_adapted = True
-                    return self.adaptation_depth
-                elif spendable_income >= adaptation_measures['Drains'][1]:
-                    self.adaptation_depth = adaptation_measures['Drains'][0]
-                    self.is_adapted = True
-                    return self.adaptation_depth
-                elif spendable_income >= adaptation_measures['Sandbags'][1]:
-                    self.adaptation_depth = adaptation_measures['Sandbags'][0]
-                    self.is_adapted = True
-                    return self.adaptation_depth
-                else:
-                    return self.adaptation_depth
-
-            if self.income_label == 'Rich':
-                spendable_income = (self.income / self.housesize) * 4 * 0.50
-                if spendable_income >= adaptation_measures['Heightening'][1]:
-                    self.adaptation_depth = adaptation_measures['Heightening'][0]
-                    self.is_adapted = True
-                    return self.adaptation_depth
-                elif spendable_income >= adaptation_measures['Drains'][1]:
-                    self.adaptation_depth = adaptation_measures['Drains'][0]
-                    self.is_adapted = True
-                    return self.adaptation_depth
-                elif spendable_income >= adaptation_measures['Sandbags'][1]:
-                    self.adaptation_depth = adaptation_measures['Sandbags'][0]
-                    self.is_adapted = True
-                    return self.adaptation_depth
-                else:
-                    return self.adaptation_depth
+            if (self.savings / self.housesize) >= adaptation_measures[self.optimal_measure][1]:
+                self.adaptation_depth = adaptation_measures[self.optimal_measure][0]
+                self.savings -= adaptation_measures[self.optimal_measure][1]*self.housesize
+            return
+        # else:
+        #     # For every income_label, there is a different percentage of spendable income
+        #     # The choice for this is elaborated in section ... of the report
+        #     if self.income_label == 'Poor':
+        #         # Spendable income is calculated as a percentage of yearly income (4 ticks) per m2
+        #         # This spendable_income is later used to decide whether or not a certain adaptation measure is chosen
+        #         spendable_income = (self.income / self.housesize) * 4 * 0.10
+        #         # This if sequence kicks off the decision making process
+        #         # The assumption is that agents always decide to go for the highest number of adaptation_depth if they can afford it
+        #         # So, the agent first checks if it has enough spendable income for the best adaptation measure, heightening.
+        #         if spendable_income >= adaptation_measures['Heightening'][1]:
+        #             self.adaptation_depth = adaptation_measures['Heightening'][0]
+        #             self.is_adapted = True
+        #             return self.adaptation_depth
+        #         # If they do not have enough spendable income, they check if they have enough to unplug the drains
+        #         elif spendable_income >= adaptation_measures['Drains'][1]:
+        #             self.adaptation_depth = adaptation_measures['Drains'][0]
+        #             self.is_adapted = True
+        #             return self.adaptation_depth
+        #         # If they do not have enough spendable income again, they check if they have enough to place sandbags
+        #         elif spendable_income >= adaptation_measures['Sandbags'][1]:
+        #             self.adaptation_depth = adaptation_measures['Sandbags'][0]
+        #             self.is_adapted = True
+        #             return self.adaptation_depth
+        #         # When they have no money for any adaptation measure, adaptation_depth remains the initial value of 0
+        #         else:
+        #             return self.adaptation_depth
+        #
+        #     # The same structure as elaborated in comments above, is also used for the other two income_labels
+        #     # Note that the percentage used to calculate the spendable income differs between the income_labels
+        #     if self.income_label == 'Middle-Class':  # Option 1: place sandbags to reduce flood_depth with half a meter
+        #         spendable_income = (self.income / self.housesize) * 4 * 0.25
+        #         if spendable_income >= adaptation_measures['Heightening'][1]:
+        #             self.adaptation_depth = adaptation_measures['Heightening'][0]
+        #             self.is_adapted = True
+        #             return self.adaptation_depth
+        #         elif spendable_income >= adaptation_measures['Drains'][1]:
+        #             self.adaptation_depth = adaptation_measures['Drains'][0]
+        #             self.is_adapted = True
+        #             return self.adaptation_depth
+        #         elif spendable_income >= adaptation_measures['Sandbags'][1]:
+        #             self.adaptation_depth = adaptation_measures['Sandbags'][0]
+        #             self.is_adapted = True
+        #             return self.adaptation_depth
+        #         else:
+        #             return self.adaptation_depth
+        #
+        #     if self.income_label == 'Rich':
+        #         spendable_income = (self.income / self.housesize) * 4 * 0.50
+        #         if spendable_income >= adaptation_measures['Heightening'][1]:
+        #             self.adaptation_depth = adaptation_measures['Heightening'][0]
+        #             self.is_adapted = True
+        #             return self.adaptation_depth
+        #         elif spendable_income >= adaptation_measures['Drains'][1]:
+        #             self.adaptation_depth = adaptation_measures['Drains'][0]
+        #             self.is_adapted = True
+        #             return self.adaptation_depth
+        #         elif spendable_income >= adaptation_measures['Sandbags'][1]:
+        #             self.adaptation_depth = adaptation_measures['Sandbags'][0]
+        #             self.is_adapted = True
+        #             return self.adaptation_depth
+        #         else:
+        #             return self.adaptation_depth
 
     def calculate_adapted_flood_depth_and_damage(self):
         self.flood_depth_estimated = self.flood_depth_estimated - self.adaptation_depth
@@ -218,6 +244,7 @@ class Households(Agent):
 
     def step(self):
         # Logic for adaptation based on estimated flood damage and a random chance.
+        self.income_to_savings()
         self.calculate_network_flood_perception(self.model.all_households)
         self.change_own_flood_perception()
         self.decide_to_adapt()
