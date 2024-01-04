@@ -83,14 +83,12 @@ class AdaptationModel(Model):
                         "FloodDamageEstimated" : "flood_damage_estimated",
                         "FloodDepthActual": "flood_depth_actual",
                         "FloodDamageActual" : "flood_damage_actual",
+                        "OptimalMeasure": "optimal_measure",
                         "IsAdapted": "is_adapted",
-                        "AdaptationDepth":"adaptation_depth",
-                        "location":"location",
-                        "HouseSize":'housesize',
+                        "CostOfAdaptation": "cost_of_adaptation",
+                        "IncomeLabel": "income_label",
                         "Income":"income",
-                        "IncomeLabel":"income_label",
                         "Savings":"savings",
-                        "OptimalMeasure":"optimal_measure",
                         "OwnFloodPerception":"own_flood_perception",
                         "NetworkPerception":"network_flood_perception"
                         # ... other reporters ...

@@ -169,7 +169,6 @@ def calculate_basic_flood_damage(flood_depth, housesize):
     else:
         # see flood_damage.xlsx for function generation
         flood_damage = (0.1746 * math.log(flood_depth) + 0.6483) * 788 * housesize
-    #print(flood_damage)
     return flood_damage
 
 
