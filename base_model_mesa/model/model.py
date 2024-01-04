@@ -84,8 +84,12 @@ class AdaptationModel(Model):
                         "FloodDepthActual": "flood_depth_actual",
                         "FloodDamageActual" : "flood_damage_actual",
                         "IsAdapted": "is_adapted",
-                        "FriendsCount": lambda a: a.count_friends(radius=1),
+                        "AdaptationDepth":"adaptation_depth",
                         "location":"location",
+                        "Income":"income",
+                        "IncomeLabel":"income_label",
+                        "OwnFloodPerception":"own_flood_perception",
+                        "NetworkPerception":"network_flood_perception"
                         # ... other reporters ...
                         }
         #set up the data collector 
@@ -187,7 +191,7 @@ class AdaptationModel(Model):
                 # Calculate the actual flood depth as a random number between 0.5 and 1.2 times the estimated flood depth
                 agent.flood_depth_actual = random.uniform(0.5, 1.2) * agent.flood_depth_estimated
                 # calculate the actual flood damage given the actual flood depth
-                agent.flood_damage_actual = calculate_basic_flood_damage(agent.flood_depth_actual)
+                agent.flood_damage_actual = calculate_basic_flood_damage(agent.flood_depth_actual, agent.housesize)
         
         # Collect data and advance the model by one step
         self.datacollector.collect(self)
