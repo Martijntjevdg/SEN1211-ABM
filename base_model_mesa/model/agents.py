@@ -117,15 +117,20 @@ class Households(Agent):
         self.network_flood_perception = most_common_value
 
     def change_own_flood_perception(self):
-        # These variables are random integers between 1 and 3 at the moment
+        # These variables are random integers between 1 and 4 at the moment
+        #EXPAND: the situation now -> we change if it is not the same (very harsh majority rule)
+        #We want to make it more subtle: you cannot change from 1 to 4 in one step
+        #Moreover, there is a chance that you do not takeover the majority, to make it a little more complex
         if self.network_flood_perception != self.own_flood_perception:
             self.own_flood_perception = self.network_flood_perception
         return self.own_flood_perception
     def income_to_savings(self):
+        #EXPAND: more complex behaviour on savings -> depending on flood_perception and housesize (exposure)
         savings_per_step = 0.025*self.income
         self.savings += savings_per_step
 
     def decide_to_adapt(self):
+        #EXPAND: add the saving behaviour per situation
         if self.own_flood_perception == 2 and self.flood_depth_estimated > 1.5 and self.adaptation_depth != 0.2:
             self.optimal_measure = 'Sandbags'
             self.going_to_adapt = True
