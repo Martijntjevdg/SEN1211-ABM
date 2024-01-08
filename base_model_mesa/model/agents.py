@@ -172,7 +172,7 @@ class Households(Agent):
         # {'Measure': [adaptation_depth, costs per m2]}
         # Assumptions and calculations on costs in Appendix ...
 
-        if self.optimal_measure == 'None':
+        if self.optimal_measure == 'None' or self.is_adapted == True:
             # If the agent has not decided to adapt, this function will end here.
             return
 
@@ -184,6 +184,7 @@ class Households(Agent):
                 self.flood_depth_estimated = self.flood_depth_estimated - self.adaptation_depth
                 self.flood_damage_estimated = calculate_basic_flood_damage(self.flood_depth_estimated, self.housesize)
                 self.going_to_adapt = False
+                self.optimal_measure = str(self.optimal_measure) + '_' + str(self.model.schedule.steps)
                 self.is_adapted = True
             return
 
