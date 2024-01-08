@@ -22,15 +22,14 @@ class Households(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.is_adapted = False  # Initial adaptation status set to False
-        self.going_to_adapt = False
-        self.income_label = self.assign_income_label()
-        self.income = self.calculate_income()
-        self.savings = 0
-        self.housesize = self.assign_housesize()
-        self.adaptation_depth = 0
-        self.cost_of_adaptation = 0
-        self.household_damage = 0
-        self.optimal_measure = 'None'
+        self.going_to_adapt = False #Flicks to True when a Household decides to adapt and flicks back when the adaptation is completed
+        self.income_label = self.assign_income_label() #Household receives an income label: 'Poor', 'Middle-Class', 'Rich'
+        self.income = self.calculate_income() #Income per step is calculated based on income label
+        self.savings = 0 #Savings start at 0 for every household, a part of income is saved each step
+        self.housesize = self.assign_housesize() #Based on income label, a household is assigned a certain house size in m2
+        self.adaptation_depth = 0 #Initial adaptation depth is 0 as Household have no adaptation at initialization
+        self.cost_of_adaptation = 0 #Initial cost of adaptation is 0 as Households have no adaptation at initialization
+        self.optimal_measure = 'None' #Initial optimal measure is None, is assigned from the first step and can change over time
 
         # getting flood map values
         # Get a random location on the map
@@ -51,18 +50,17 @@ class Households(Agent):
             self.flood_depth_estimated = 0
         
         # calculate the estimated flood damage given the estimated flood depth. Flood damage is a factor between 0 and 1
-        # ook in deze regel kunnen we adaptation toevoegen en van de flood_depth_estimated afhalen
         self.flood_damage_estimated = calculate_basic_flood_damage(flood_depth=self.flood_depth_estimated, housesize= self.housesize)
 
         # Add an attribute for the actual flood depth. This is set to zero at the beginning of the simulation since there is not flood yet
         # and will update its value when there is a shock (i.e., actual flood). Shock happens at some point during the simulation
         self.flood_depth_actual = 0
         #calculate the actual flood damage given the actual flood depth. Flood damage is a factor between 0 and 1
-        #In deze regel zouden we de adaptation van de actual flood depth af kunnen halen om te kijken hoeveel damage er is
         self.flood_damage_actual = calculate_basic_flood_damage(flood_depth=self.flood_depth_actual, housesize = self.housesize)
 
         # Base the initial flood perception on whether the household is in a floodplain or not
         self.own_flood_perception = self.initial_own_flood_perception()
+        #The perception within the network is calculated in step 1, so initially set to 0
         self.network_flood_perception = 0
 
     def assign_income_label(self):
