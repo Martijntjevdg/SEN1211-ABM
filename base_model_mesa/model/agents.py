@@ -93,15 +93,15 @@ class Households(Agent):
         income_distribution = {'Poor': [5000, 1875], 'Middle-Class': [29375, 10312], 'Rich': [87500, 18750]}
         #income_distribution = 'Label': [mean, standard_deviation]
         #Income is per tick which is quarter of a year
-
-        income = round(random.normalvariate(income_distribution[self.income_label][0],
-                                            income_distribution[self.income_label][1]))
+        while income < 0:
+            income = round(random.normalvariate(income_distribution[self.income_label][0],
+                                                income_distribution[self.income_label][1]))
         return income
 
     def assign_housesize(self):
         average_household_surfaces = {'Poor': [100, 30], 'Middle-Class': [201.6, 50], 'Rich': [500, 200]}
-
-        household_size = round(random.normalvariate(average_household_surfaces[self.income_label][0],
+        while household_size < 30:
+            household_size = round(random.normalvariate(average_household_surfaces[self.income_label][0],
                                                  average_household_surfaces[self.income_label][1]))
         return household_size
     def calculate_network_flood_perception(self, all_households):
@@ -118,31 +118,26 @@ class Households(Agent):
 
     def change_own_flood_perception(self):
         # These variables are random integers between 1 and 4 at the moment
-        #EXPAND: the situation now -> we change if it is not the same (very harsh majority rule)
-        #We want to make it more subtle: you cannot change from 1 to 4 in one step
-        #Moreover, there is a chance that you do not takeover the majority, to make it a little more complex
         if self.network_flood_perception != self.own_flood_perception:
             self.own_flood_perception = self.network_flood_perception
         return self.own_flood_perception
 
-    def decide_to_adapt(self):
+    def decide_on_optimal_adaptation(self):
         if self.is_adapted == True:
             return
 
-        adaptation_measures = {'Sandbags': [0.2, 5], 'Drains': [0.7, 30], 'Heightening': [2.5, 585]}
-
         margin_of_sandbags = (self.flood_damage_estimated -
-                              calculate_basic_flood_damage((self.flood_depth_estimated-adaptation_measures['Sandbags'][0]), self.housesize))
+                              calculate_basic_flood_damage((self.flood_depth_estimated-self.model.adaptation_measures['Sandbags'][0]), self.housesize))
 
         margin_of_drains = (self.flood_damage_estimated -
-                              calculate_basic_flood_damage((self.flood_depth_estimated - adaptation_measures['Drains'][0]), self.housesize))
+                              calculate_basic_flood_damage((self.flood_depth_estimated -self.model.adaptation_measures['Drains'][0]), self.housesize))
 
         margin_of_heightening = (self.flood_damage_estimated -
-                              calculate_basic_flood_damage((self.flood_depth_estimated - adaptation_measures['Heightening'][0]), self.housesize))
+                              calculate_basic_flood_damage((self.flood_depth_estimated -self.model.adaptation_measures['Heightening'][0]), self.housesize))
 
-        costs_for_sandbags = adaptation_measures['Sandbags'][1]*self.housesize
-        costs_for_drains = adaptation_measures['Drains'][1]*self.housesize
-        costs_for_heightening = adaptation_measures['Heightening'][1]*self.housesize
+        costs_for_sandbags = self.model.adaptation_measures['Sandbags'][1]*self.housesize
+        costs_for_drains = self.model.adaptation_measures['Drains'][1]*self.housesize
+        costs_for_heightening = self.model.adaptation_measures['Heightening'][1]*self.housesize
 
         if self.own_flood_perception == 2 and margin_of_sandbags > costs_for_sandbags:
             self.optimal_measure = 'Sandbags'
@@ -176,20 +171,16 @@ class Households(Agent):
         if self.going_to_adapt == True:
             self.savings += (self.own_flood_perception/4)*0.10*self.income
 
-    def choose_adaptation(self):
-        adaptation_measures = {'Sandbags': [0.2, 5], 'Drains': [0.7, 30], 'Heightening': [2.5, 585]}
-        # {'Measure': [adaptation_depth, costs per m2]}
-        # Assumptions and calculations on costs in Appendix ...
-
+    def execute_adaptation(self):
         if self.optimal_measure == 'None' or self.is_adapted == True:
             # If the agent has not decided to adapt, this function will end here.
             return
 
         else:
-            if (self.savings / self.housesize) >= adaptation_measures[self.optimal_measure][1] and self.going_to_adapt == True:
-                self.adaptation_depth = adaptation_measures[self.optimal_measure][0]
-                self.savings -= adaptation_measures[self.optimal_measure][1]*self.housesize
-                self.cost_of_adaptation = adaptation_measures[self.optimal_measure][1]*self.housesize
+            if (self.savings / self.housesize) >= self.model.adaptation_measures[self.optimal_measure][1] and self.going_to_adapt == True:
+                self.adaptation_depth = self.model.adaptation_measures[self.optimal_measure][0]
+                self.savings -= self.model.adaptation_measures[self.optimal_measure][1]*self.housesize
+                self.cost_of_adaptation = self.model.adaptation_measures[self.optimal_measure][1]*self.housesize
                 self.flood_depth_estimated = self.flood_depth_estimated - self.adaptation_depth
                 if self.flood_depth_estimated < 0:
                     self.flood_depth_estimated = 0
@@ -203,7 +194,7 @@ class Households(Agent):
         # Logic for adaptation based on estimated flood damage and a random chance.
         self.calculate_network_flood_perception(self.model.all_households)
         self.change_own_flood_perception()
-        self.decide_to_adapt()
+        self.decide_on_optimal_adaptation()
         self.save_income()
-        self.choose_adaptation()
+        self.execute_adaptation()
 

@@ -46,6 +46,9 @@ class AdaptationModel(Model):
         
         # defining the variables and setting the values
         self.number_of_steps = number_of_steps
+        self.adaptation_measures = {'Sandbags': [0.2, 5], 'Drains': [0.7, 30], 'Heightening': [2.5, 585]}
+        # {'Measure': [adaptation_depth, costs per m2]}
+        # Assumptions and calculations on costs in Appendix ...
         self.number_of_households = number_of_households  # Total number of household agents
         self.seed = seed
         self.flood_step = random.randint(1,number_of_steps)
@@ -84,6 +87,7 @@ class AdaptationModel(Model):
         agent_metrics = {
                         "FloodDepthEstimated": "flood_depth_estimated",
                         "FloodDamageEstimated" : "flood_damage_estimated",
+                        "HouseSize":"housesize",
                         "FloodDepthActual": "flood_depth_actual",
                         "FloodDamageActual" : "flood_damage_actual",
                         "OptimalMeasure": "optimal_measure",
