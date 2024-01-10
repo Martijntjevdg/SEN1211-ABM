@@ -25,9 +25,9 @@ class AdaptationModel(Model):
     """
 
     def __init__(self, 
-                 seed = None,
-                 number_of_households = 1, # number of household agents
-                 number_of_steps = 20,
+                 seed=None,
+                 number_of_households=25, # number of household agents
+                 number_of_steps=20,
                  # Simplified argument for choosing flood map. Can currently be "harvey", "100yr", or "500yr".
                  flood_map_choice='harvey',
                  # ### network related parameters ###
@@ -45,6 +45,7 @@ class AdaptationModel(Model):
         super().__init__(seed = seed)
         
         # defining the variables and setting the values
+        self.number_of_steps = number_of_steps
         self.number_of_households = number_of_households  # Total number of household agents
         self.seed = seed
         self.flood_step = random.randint(1,number_of_steps)
@@ -196,7 +197,6 @@ class AdaptationModel(Model):
                 # calculate the actual flood damage given the actual flood depth
                 agent.flood_damage_actual = calculate_basic_flood_damage(agent.flood_depth_actual, agent.housesize)
 
-        
         # Collect data and advance the model by one step
         self.datacollector.collect(self)
         self.schedule.step()
