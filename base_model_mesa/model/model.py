@@ -28,6 +28,7 @@ class AdaptationModel(Model):
                  seed=None,
                  number_of_households=25, # number of household agents
                  number_of_steps=20,
+                 subsidies_package=0,
                  # Simplified argument for choosing flood map. Can currently be "harvey", "100yr", or "500yr".
                  flood_map_choice='harvey',
                  # ### network related parameters ###
@@ -46,9 +47,7 @@ class AdaptationModel(Model):
         
         # defining the variables and setting the values
         self.number_of_steps = number_of_steps
-        self.adaptation_measures = {'Sandbags': [0.2, 5], 'Drains': [0.7, 30], 'Heightening': [2.5, 585]}
-        # {'Measure': [adaptation_depth, costs per m2]}
-        # Assumptions and calculations on costs in Appendix ...
+        self.subsidies_package = subsidies_package
         self.number_of_households = number_of_households  # Total number of household agents
         self.seed = seed
         self.flood_step = random.randint(1,number_of_steps)

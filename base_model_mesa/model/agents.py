@@ -30,7 +30,7 @@ class Households(Agent):
         self.adaptation_depth = 0 #Initial adaptation depth is 0 as Household have no adaptation at initialization
         self.cost_of_adaptation = 0 #Initial cost of adaptation is 0 as Households have no adaptation at initialization
         self.optimal_measure = 'None' #Initial optimal measure is None, is assigned from the first step and can change over time
-
+        self.adaptation_measures = self.assign_adaptation_measures()
         # getting flood map values
         # Get a random location on the map
         loc_x, loc_y = generate_random_location_within_map_domain()
@@ -104,6 +104,35 @@ class Households(Agent):
             household_size = round(random.normalvariate(average_household_surfaces[self.income_label][0],
                                                  average_household_surfaces[self.income_label][1]))
         return household_size
+
+    def assign_adaptation_measures(self):
+        if self.model.subsidies_package == 0:
+            adaptation_measures = {'Sandbags': [0.2, 5], 'Drains': [0.7, 30], 'Heightening': [2.5, 585]}
+
+        if self.model.subsidies_package == 1:
+            adaptation_measures = {'Sandbags': [0.2, 3], 'Drains': [0.7, 20], 'Heightening': [2.5, 300]}
+
+        if self.model.subsidies_package == 2:
+            if self.income_label == 'Poor':
+                adaptation_measures = {'Sandbags': [0.2, 2], 'Drains': [0.7, 15], 'Heightening': [2.5, 150]}
+
+            if self.income_label == 'Middle-Class':
+                adaptation_measures = {'Sandbags': [0.2, 3], 'Drains': [0.7, 20], 'Heightening': [2.5, 300]}
+
+            if self.income_label == 'Rich':
+                adaptation_measures = {'Sandbags': [0.2, 5], 'Drains': [0.7, 30], 'Heightening': [2.5, 585]}
+
+        if self.model.subsidies_package == 3:
+            if self.flood_depth_estimated <= 1:
+                adaptation_measures = {'Sandbags': [0.2, 5], 'Drains': [0.7, 30], 'Heightening': [2.5, 585]}
+
+            if 1 < self.flood_depth_estimated <= 2:
+                adaptation_measures = {'Sandbags': [0.2, 3], 'Drains': [0.7, 20], 'Heightening': [2.5, 300]}
+
+            if self.flood_depth_estimated > 2:
+                adaptation_measures = {'Sandbags': [0.2, 2], 'Drains': [0.7, 15], 'Heightening': [2.5, 150]}
+
+        return adaptation_measures
     def calculate_network_flood_perception(self, all_households):
         radius = 1 #Change this variable to a different radius to change the dynamic of choosing friends
         friends = self.model.grid.get_neighborhood(self.pos, include_center=False, radius=radius)
