@@ -90,6 +90,8 @@ class AdaptationModel(Model):
                         "FloodDepthActual": "flood_depth_actual",
                         "FloodDamageActual" : "flood_damage_actual",
                         "OptimalMeasure": "optimal_measure",
+                        "AdaptationMeasures":"adaptation_measures",
+                        "GoingToAdapt":"going_to_adapt",
                         "IsAdapted": "is_adapted",
                         "CostOfAdaptation": "cost_of_adaptation",
                         "IncomeLabel": "income_label",

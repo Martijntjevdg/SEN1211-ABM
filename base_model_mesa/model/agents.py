@@ -30,7 +30,6 @@ class Households(Agent):
         self.adaptation_depth = 0 #Initial adaptation depth is 0 as Household have no adaptation at initialization
         self.cost_of_adaptation = 0 #Initial cost of adaptation is 0 as Households have no adaptation at initialization
         self.optimal_measure = 'None' #Initial optimal measure is None, is assigned from the first step and can change over time
-        self.adaptation_measures = self.assign_adaptation_measures()
         # getting flood map values
         # Get a random location on the map
         loc_x, loc_y = generate_random_location_within_map_domain()
@@ -63,6 +62,8 @@ class Households(Agent):
         #The perception within the network is calculated in step 1, so initially set to 0
         self.network_flood_perception = 0
 
+        self.adaptation_measures = self.assign_adaptation_measures()
+
     def assign_income_label(self):
         # Define the distribution of labels and their probabilities
         income_label_distribution = {'Poor': 25.68, 'Middle-Class': 63.76, 'Rich': 10.55}
@@ -90,15 +91,17 @@ class Households(Agent):
 
         return flood_perception
     def calculate_income(self):
+        income = 0
         income_distribution = {'Poor': [5000, 1875], 'Middle-Class': [29375, 10312], 'Rich': [87500, 18750]}
         #income_distribution = 'Label': [mean, standard_deviation]
         #Income is per tick which is quarter of a year
-        while income < 0:
+        while income <= 0:
             income = round(random.normalvariate(income_distribution[self.income_label][0],
                                                 income_distribution[self.income_label][1]))
         return income
 
     def assign_housesize(self):
+        household_size = 0
         average_household_surfaces = {'Poor': [100, 30], 'Middle-Class': [201.6, 50], 'Rich': [500, 200]}
         while household_size < 30:
             household_size = round(random.normalvariate(average_household_surfaces[self.income_label][0],
