@@ -32,7 +32,7 @@ class Households(Agent):
         self.optimal_measure = 'None' #Initial optimal measure is None, is assigned from the first step and can change over time
         # getting flood map values
         # Get a random location on the map
-        loc_x, loc_y = generate_random_location_within_map_domain()
+        loc_x, loc_y = generate_random_location_within_map_domain(model)
         self.location = Point(loc_x, loc_y)
 
         # Check whether the location is within floodplain

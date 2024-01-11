@@ -88,6 +88,7 @@ class AdaptationModel(Model):
                         "FloodDepthEstimated": "flood_depth_estimated",
                         "FloodDamageEstimated" : "flood_damage_estimated",
                         "HouseSize":"housesize",
+                        "Location":"location",
                         "FloodDepthActual": "flood_depth_actual",
                         "FloodDamageActual" : "flood_damage_actual",
                         "OptimalMeasure": "optimal_measure",
@@ -162,7 +163,7 @@ class AdaptationModel(Model):
         #BE CAREFUL THAT YOU MAY HAVE DIFFERENT AGENT TYPES SO YOU NEED TO FIRST CHECK IF THE AGENT IS ACTUALLY A HOUSEHOLD AGENT USING "ISINSTANCE"
         adapted_count = sum([1 for agent in self.schedule.agents if isinstance(agent, Households) and agent.is_adapted])
         return adapted_count
-
+    
     def plot_model_domain_with_agents(self):
         fig, ax = plt.subplots()
         # Plot the model domain

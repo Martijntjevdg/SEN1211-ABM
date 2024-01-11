@@ -89,7 +89,7 @@ floodplain_multipolygon = floodplain_geoseries[0]  # The geoseries contains only
 prepare(floodplain_multipolygon)
 
 
-def generate_random_location_within_map_domain():
+def generate_random_location_within_map_domain(model):
     """
     Generate random location coordinates within the map domain polygon.
 
@@ -97,10 +97,11 @@ def generate_random_location_within_map_domain():
     -------
     x, y: lists of location coordinates, longitude and latitude
     """
+
     while True:
         # generate random location coordinates within square area of map domain
-        x = random.uniform(map_minx, map_maxx)
-        y = random.uniform(map_miny, map_maxy)
+        x = model.random.uniform(map_minx, map_maxx)
+        y = model.random.uniform(map_miny, map_maxy)
         # check if the point is within the polygon, if so, return the coordinates
         if contains_xy(map_domain_polygon, x, y):
             return x, y
