@@ -69,7 +69,7 @@ class Households(Agent):
         income_label_distribution = {'Poor': 25.68, 'Middle-Class': 63.76, 'Rich': 10.55}
 
         # Randomly choose a label based on the distribution
-        rand_num = random.uniform(0, 100)
+        rand_num = self.random.uniform(0, 100)
         cumulative_prob = 0
 
         for income_label, prob in income_label_distribution.items():
@@ -85,9 +85,9 @@ class Households(Agent):
             probabilities = [0.15, 0.25, 0.3, 0.3]
 
             # Assign a value based on chance
-            flood_perception = random.choices(options, probabilities)[0]
+            flood_perception = self.random.choices(options, probabilities)[0]
         else:
-            flood_perception = random.randint(1, 4)
+            flood_perception = self.random.randint(1, 4)
 
         return flood_perception
     def calculate_income(self):
@@ -96,7 +96,7 @@ class Households(Agent):
         #income_distribution = 'Label': [mean, standard_deviation]
         #Income is per tick which is quarter of a year
         while income <= 0:
-            income = round(random.normalvariate(income_distribution[self.income_label][0],
+            income = round(self.random.normalvariate(income_distribution[self.income_label][0],
                                                 income_distribution[self.income_label][1]))
         return income
 
@@ -104,7 +104,7 @@ class Households(Agent):
         household_size = 0
         average_household_surfaces = {'Poor': [100, 30], 'Middle-Class': [201.6, 50], 'Rich': [500, 200]}
         while household_size < 30:
-            household_size = round(random.normalvariate(average_household_surfaces[self.income_label][0],
+            household_size = round(self.random.normalvariate(average_household_surfaces[self.income_label][0],
                                                  average_household_surfaces[self.income_label][1]))
         return household_size
 

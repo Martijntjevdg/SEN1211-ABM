@@ -7,4 +7,4 @@ m1 = AdaptationModel(number_of_households=25, number_of_steps= 80, flood_map_cho
 h1 = m1.all_households[0]
 #h1.count_friends(1)
 #calculate_basic_flood_damage(h1.flood_depth_estimated, h1.housesize)
-print(m1.number_of_steps)
+h1.assign_income_label()

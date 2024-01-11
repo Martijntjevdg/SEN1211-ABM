@@ -1,7 +1,7 @@
 # Importing necessary libraries
 import networkx as nx
 from mesa import Model, Agent
-from mesa.time import RandomActivation
+from mesa.time import RandomActivation, BaseScheduler
 from mesa.space import NetworkGrid
 from mesa.datacollection import DataCollector
 import geopandas as gpd
@@ -50,7 +50,8 @@ class AdaptationModel(Model):
         self.subsidies_package = subsidies_package
         self.number_of_households = number_of_households  # Total number of household agents
         self.seed = seed
-        self.flood_step = random.randint(1,number_of_steps)
+
+        self.flood_step = self.random.randint(1, number_of_steps)
 
         # network
         self.network = network # Type of network to be created
@@ -67,7 +68,7 @@ class AdaptationModel(Model):
         self.initialize_maps(flood_map_choice)
 
         # set schedule for agents
-        self.schedule = RandomActivation(self)  # Schedule for activating agents
+        self.schedule = BaseScheduler(self)  # Schedule for activating agents
 
         # create households through initiating a household on each node of the network graph
         for i, node in enumerate(self.G.nodes()):
