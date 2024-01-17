@@ -35,6 +35,9 @@ class Households(Agent):
         loc_x, loc_y = generate_random_location_within_map_domain(model)
         self.location = Point(loc_x, loc_y)
 
+        #For verification purposes, the network of the agent is collected in the following variable
+        self.network = {}
+
         # Check whether the location is within floodplain
         self.in_floodplain = False
         if contains_xy(geom=floodplain_multipolygon, x=self.location.x, y=self.location.y):
@@ -69,13 +72,15 @@ class Households(Agent):
         income_label_distribution = {'Poor': 25.68, 'Middle-Class': 63.76, 'Rich': 10.55}
 
         # Randomly choose a label based on the distribution
-        rand_num = self.random.uniform(0, 100)
-        cumulative_prob = 0
+        while True:
+            # Randomly choose a label based on the distribution
+            rand_num = self.random.uniform(0, 100)
+            cumulative_prob = 0
 
-        for income_label, prob in income_label_distribution.items():
-            cumulative_prob += prob
-            if rand_num <= cumulative_prob:
-                return income_label
+            for income_label, prob in income_label_distribution.items():
+                cumulative_prob += prob
+                if rand_num <= cumulative_prob:
+                    return income_label
     def initial_own_flood_perception(self):
         if self.in_floodplain:
             # Values to choose from
@@ -144,6 +149,7 @@ class Households(Agent):
         for friend in friends:
             network[all_households[friend].unique_id] = all_households[friend].own_flood_perception
 
+        self.network = network
         value_counts = Counter(network.values())
         most_common_value, count = value_counts.most_common(1)[0]
         self.network_flood_perception = most_common_value

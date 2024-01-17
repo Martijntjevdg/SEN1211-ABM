@@ -103,11 +103,12 @@ class AdaptationModel(Model):
                         "Income":"income",
                         "Savings":"savings",
                         "OwnFloodPerception":"own_flood_perception",
-                        "NetworkPerception":"network_flood_perception"
+                        "NetworkPerception":"network_flood_perception",
+                        "Network":"network"
                         # ... other reporters ...
                         }
         #set up the data collector 
-        self.datacollector = DataCollector(model_reporters=model_metrics, agent_reporters=agent_metrics)
+        self.datacollector = DataCollector(model_reporters=model_metrics)#, agent_reporters=agent_metrics)
             
 
     def initialize_network(self):
