@@ -78,12 +78,15 @@ class AdaptationModel(Model):
 
         # The next line creates the all_households variable, which is used to calculate the network_flood_perception
         self.all_households = self.schedule.agents
+
+
         # Data collection setup to collect data
         model_metrics = {
-                        "total_adapted_households": self.total_adapted_households
-                        #"total_adapation_costs":self.total_adaptation_costs,
-                        #"total_damage":self.total_damage,
+                        "total_adapted_households": self.total_adapted_households,
+                        "total_actual_damage": self.total_actual_damage,
+                        "total_expected_damage": self.total_expected_damage,
                         #"total_subsidy_costs":self.subsidy_costs,
+                        #"total_adapation_costs":self.total_adaptation_costs,
                         # ... other reporters ...
                         }
         
@@ -108,7 +111,7 @@ class AdaptationModel(Model):
                         # ... other reporters ...
                         }
         #set up the data collector 
-        self.datacollector = DataCollector(model_reporters=model_metrics)#, agent_reporters=agent_metrics)
+        self.datacollector = DataCollector(model_reporters=model_metrics, agent_reporters=agent_metrics)
             
 
     def initialize_network(self):
@@ -167,7 +170,14 @@ class AdaptationModel(Model):
         #BE CAREFUL THAT YOU MAY HAVE DIFFERENT AGENT TYPES SO YOU NEED TO FIRST CHECK IF THE AGENT IS ACTUALLY A HOUSEHOLD AGENT USING "ISINSTANCE"
         adapted_count = sum([1 for agent in self.schedule.agents if isinstance(agent, Households) and agent.is_adapted])
         return adapted_count
-    
+
+    def total_actual_damage(self):
+        total_actual_damage = sum(agent.flood_damage_actual for agent in self.schedule.agents)
+        return total_actual_damage
+
+    def total_expected_damage(self):
+        total_expected_damage = sum(agent.flood_damage_estimated for agent in self.schedule.agents)
+        return total_expected_damage
     def plot_model_domain_with_agents(self):
         fig, ax = plt.subplots()
         # Plot the model domain
@@ -208,6 +218,9 @@ class AdaptationModel(Model):
                 # calculate the actual flood damage given the actual flood depth
                 agent.flood_damage_actual = calculate_basic_flood_damage(agent.flood_depth_actual, agent.housesize)
 
+        self.total_adapted_households()
+        self.total_actual_damage()
+        self.total_expected_damage()
         # Collect data and advance the model by one step
         self.datacollector.collect(self)
         self.schedule.step()
