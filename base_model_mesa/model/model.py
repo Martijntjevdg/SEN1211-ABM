@@ -80,7 +80,10 @@ class AdaptationModel(Model):
         self.all_households = self.schedule.agents
         # Data collection setup to collect data
         model_metrics = {
-                        "total_adapted_households": self.total_adapted_households,
+                        "total_adapted_households": self.total_adapted_households
+                        #"total_adapation_costs":self.total_adaptation_costs,
+                        #"total_damage":self.total_damage,
+                        #"total_subsidy_costs":self.subsidy_costs,
                         # ... other reporters ...
                         }
         
@@ -207,3 +210,15 @@ class AdaptationModel(Model):
         # Collect data and advance the model by one step
         self.datacollector.collect(self)
         self.schedule.step()
+
+    def model_run(self):
+        for step in range(self.number_of_steps):
+            self.step()
+
+            # The model stops when the flood has taken place.
+            # The set of rules for agents and their behavior flowing from this set is only relevant before a flood
+            if step == self.flood_step:
+                #self.plot_model_domain_with_agents()
+                break
+
+
