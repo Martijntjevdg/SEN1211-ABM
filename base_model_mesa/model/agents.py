@@ -8,7 +8,7 @@ from collections import Counter
 
 
 # Import functions from functions.py
-from functions import generate_random_location_within_map_domain, get_flood_depth, calculate_basic_flood_damage, floodplain_multipolygon
+from functions import generate_random_location_within_map_domain, get_flood_depth, calculate_basic_flood_damage, floodplain_multipolygon, calculate_subsidies_received
 
 
 # Define the Households agent class
@@ -29,6 +29,7 @@ class Households(Agent):
         self.housesize = self.assign_housesize() #Based on income label, a household is assigned a certain house size in m2
         self.adaptation_depth = 0 #Initial adaptation depth is 0 as Household have no adaptation at initialization
         self.cost_of_adaptation = 0 #Initial cost of adaptation is 0 as Households have no adaptation at initialization
+        self.subsidies_received = 0 #Initial subsidies received is 0 when Households have not managed to do adaptation yet
         self.optimal_measure = 'None' #Initial optimal measure is None, is assigned from the first step and can change over time
         # getting flood map values
         # Get a random location on the map
@@ -219,6 +220,7 @@ class Households(Agent):
                 self.adaptation_depth = self.adaptation_measures[self.optimal_measure][0]
                 self.savings -= self.adaptation_measures[self.optimal_measure][1]*self.housesize
                 self.cost_of_adaptation = self.adaptation_measures[self.optimal_measure][1]*self.housesize
+                self.subsidies_received = calculate_subsidies_received(self.optimal_measure, self.cost_of_adaptation, self.housesize)
                 self.flood_depth_estimated = self.flood_depth_estimated - self.adaptation_depth
                 if self.flood_depth_estimated < 0:
                     self.flood_depth_estimated = 0

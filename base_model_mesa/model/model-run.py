@@ -1,11 +1,7 @@
 from model import AdaptationModel
 from agents import Households
-from functions import calculate_basic_flood_damage
+from functions import calculate_basic_flood_damage, calculate_subsidies_received
 
-m1 = AdaptationModel(number_of_households=25, number_of_steps= 80, flood_map_choice="harvey", network="watts_strogatz")
-#all_households = m1.schedule.agents
-#h1 = m1.all_households[0]
-#h1.count_friends(1)
-#calculate_basic_flood_damage(h1.flood_depth_estimated, h1.housesize)
-#h1.calculate_income()
-m1.total_adapted_households()
+calculate_subsidies_received()
+
+

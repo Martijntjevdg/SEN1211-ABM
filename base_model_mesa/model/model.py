@@ -13,7 +13,7 @@ import random
 from agents import Households
 
 # Import functions from functions.py
-from functions import get_flood_map_data, calculate_basic_flood_damage
+from functions import get_flood_map_data, calculate_basic_flood_damage, calculate_gini_coefficient
 from functions import map_domain_gdf, floodplain_gdf
 
 
@@ -82,11 +82,12 @@ class AdaptationModel(Model):
 
         # Data collection setup to collect data
         model_metrics = {
-                        "total_adapted_households": self.total_adapted_households,
-                        "total_actual_damage": self.total_actual_damage,
-                        "total_expected_damage": self.total_expected_damage,
-                        #"total_subsidy_costs":self.subsidy_costs,
-                        #"total_adapation_costs":self.total_adaptation_costs,
+                        "TotalAdaptedHouseholds": self.total_adapted_households,
+                        "TotalActualDamage": self.total_actual_damage,
+                        "TotalExpectedDamage": self.total_expected_damage,
+                        "TotalAdaptationCosts":self.total_adaptation_costs,
+                        "TotalCostsOfSubsidies":self.total_subsidies_costs,
+                        "DamageToIncomeGiniCoefficient":self.calculate_damage_inequality
                         # ... other reporters ...
                         }
         
@@ -178,6 +179,47 @@ class AdaptationModel(Model):
     def total_expected_damage(self):
         total_expected_damage = sum(agent.flood_damage_estimated for agent in self.schedule.agents)
         return total_expected_damage
+
+    def total_adaptation_costs(self):
+        total_adaptation_costs = sum(agent.cost_of_adaptation for agent in self.schedule.agents)
+        return total_adaptation_costs
+
+    def total_subsidies_costs(self):
+        total_cost_of_subsidies = sum(agent.subsidies_received for agent in self.schedule.agents)
+        return total_cost_of_subsidies
+
+    def calculate_damage_inequality(self):
+        #Create subsets of all the agents within the model based on income_label
+        poor_agents = [agent for agent in self.schedule.agents if agent.income_label == 'Poor']
+        middle_class_agents = [agent for agent in self.schedule.agents if agent.income_label == 'Middle-Class']
+        rich_agents = [agent for agent in self.schedule.agents if agent.income_label == 'Rich']
+
+        # Sort agents within the label based on income
+        sorted_poor_agents = sorted(poor_agents, key=lambda agent: agent.flood_damage_actual)
+        sorted_middle_class_agents = sorted(middle_class_agents, key=lambda agent: agent.flood_damage_actual)
+        sorted_rich_agents = sorted(rich_agents, key=lambda agent: agent.flood_damage_actual)
+
+        damage_poor = [agent.flood_damage_actual for agent in sorted_poor_agents]
+        damage_middle_class = [agent.flood_damage_actual for agent in sorted_middle_class_agents]
+        damage_rich = [agent.flood_damage_actual for agent in sorted_rich_agents]
+
+        gini_poor = calculate_gini_coefficient(damage_poor)
+        gini_middle_class = calculate_gini_coefficient(damage_middle_class)
+        gini_rich = calculate_gini_coefficient(damage_rich)
+
+        # Calculate weighted average Gini coefficient
+        total_agents_poor = len(sorted_poor_agents)
+        total_agents_middle_class = len(sorted_middle_class_agents)
+        total_agents_rich = len(sorted_rich_agents)
+
+        total_agents = total_agents_poor + total_agents_middle_class + total_agents_rich
+        weighted_average_gini = (
+                (
+                            total_agents_poor * gini_poor + total_agents_middle_class * gini_middle_class + total_agents_rich * gini_rich)
+                / total_agents
+        )
+        return weighted_average_gini
+
     def plot_model_domain_with_agents(self):
         fig, ax = plt.subplots()
         # Plot the model domain
@@ -217,6 +259,8 @@ class AdaptationModel(Model):
                 agent.flood_depth_actual = random.uniform(0.5, 1.2) * agent.flood_depth_estimated
                 # calculate the actual flood damage given the actual flood depth
                 agent.flood_damage_actual = calculate_basic_flood_damage(agent.flood_depth_actual, agent.housesize)
+
+                self.running = False
 
         self.total_adapted_households()
         self.total_actual_damage()

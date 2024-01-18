@@ -172,4 +172,24 @@ def calculate_basic_flood_damage(flood_depth, housesize):
         flood_damage = (0.1746 * math.log(flood_depth) + 0.6483) * 788 * housesize
     return flood_damage
 
+def calculate_subsidies_received(optimal_measure, cost_of_adaptation, housesize):
+    standard_adaptation_measures = {'Sandbags': [0.2, 5], 'Drains': [0.7, 30], 'Heightening': [2.5, 585]}
+    actual_cost_of_adaptation = standard_adaptation_measures[optimal_measure][1]*housesize
+    subsidised_part_of_adaptation = actual_cost_of_adaptation - cost_of_adaptation
+    return subsidised_part_of_adaptation
 
+def calculate_gini_coefficient(data):
+    n = len(data)
+    sorted_data = sorted(data)
+    cumulative = [sum(sorted_data[:i+1]) for i in range(n)]
+
+    if cumulative[-1] == 0:
+        return 0  # Return 0 if cumulative[-1] is zero to avoid division by zero
+
+    perfect_equality = [i * cumulative[-1] / n for i in range(1, n+1)]
+
+    A = sum(perfect_equality) - sum(cumulative)
+
+    G = 2 * A / (n * cumulative[-1])
+
+    return G
