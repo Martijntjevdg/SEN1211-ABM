@@ -98,7 +98,7 @@ class Households(Agent):
         return flood_perception
     def calculate_income(self):
         income = 0
-        income_distribution = {'Poor': [5000, 1875], 'Middle-Class': [29375, 10312], 'Rich': [87500, 18750]}
+        income_distribution = self.model.income_distribution
         #income_distribution = 'Label': [mean, standard_deviation]
         #Income is per tick which is quarter of a year
         while income <= 0:
@@ -108,7 +108,7 @@ class Households(Agent):
 
     def assign_housesize(self):
         household_size = 0
-        average_household_surfaces = {'Poor': [100, 30], 'Middle-Class': [201.6, 50], 'Rich': [500, 200]}
+        average_household_surfaces = self.model.average_household_surfaces
         while household_size < 30:
             household_size = round(self.random.normalvariate(average_household_surfaces[self.income_label][0],
                                                  average_household_surfaces[self.income_label][1]))

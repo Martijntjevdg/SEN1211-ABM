@@ -29,6 +29,8 @@ class AdaptationModel(Model):
                  number_of_households=25, # number of household agents
                  number_of_steps=20,
                  subsidies_package=0,
+                 income_distribution={'Poor': [5000, 1875], 'Middle-Class': [29375, 10312], 'Rich': [87500, 18750]},
+                 average_household_surfaces={'Poor': [100, 30], 'Middle-Class': [201.6, 50], 'Rich': [500, 200]},
                  # Simplified argument for choosing flood map. Can currently be "harvey", "100yr", or "500yr".
                  flood_map_choice='harvey',
                  # ### network related parameters ###
@@ -50,6 +52,8 @@ class AdaptationModel(Model):
         self.subsidies_package = subsidies_package
         self.number_of_households = number_of_households  # Total number of household agents
         self.seed = seed
+        self.income_distribution = income_distribution
+        self.average_household_surfaces = average_household_surfaces
 
         self.flood_step = self.random.randint(1, number_of_steps)
 
