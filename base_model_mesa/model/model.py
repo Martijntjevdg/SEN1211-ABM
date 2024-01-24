@@ -283,9 +283,9 @@ class AdaptationModel(Model):
             return 'No Rich Agents in the model'
 
         #Append the values into the empty dictionary created at the beginning
-        damage_per_agent_per_income_label['AverageDamagePerPoorHousehold'] = average_damage_per_poor_agent
-        damage_per_agent_per_income_label['AverageDamagePerMiddleClassHousehold'] = average_damage_per_middle_class_agent
-        damage_per_agent_per_income_label['AverageDamagePerRichHousehold'] = average_damage_per_rich_agent
+        damage_per_agent_per_income_label['EstimatedAverageDamagePerPoorHousehold'] = average_damage_per_poor_agent
+        damage_per_agent_per_income_label['EstimatedAverageDamagePerMiddleClassHousehold'] = average_damage_per_middle_class_agent
+        damage_per_agent_per_income_label['EstimatedAverageDamagePerRichHousehold'] = average_damage_per_rich_agent
 
         #The values are returned as a dictionary which will later be unpacked after the model has been run
         #This dictionary is unpacked into three seperate columns for each income label
@@ -389,11 +389,11 @@ class AdaptationModel(Model):
         #This shows the damage in relation to income, which is a way to calculate inequality
         #The higher
         AverageIncomeToDamageRatio[
-            'AverageIncomeToDamagePoorHousehold'] = average_damage_per_poor_agent/average_income_per_poor_agent
+            'EstimatedAverageIncomeToDamagePoorHousehold'] = average_damage_per_poor_agent/average_income_per_poor_agent
         AverageIncomeToDamageRatio[
-            'AverageIncomeToDamageMiddleClassHousehold'] = average_damage_per_middle_class_agent/average_income_per_middle_class_agent
+            'EstimatedAverageIncomeToDamageMiddleClassHousehold'] = average_damage_per_middle_class_agent/average_income_per_middle_class_agent
         AverageIncomeToDamageRatio[
-            'AverageIncomeToDamageRichHousehold'] = average_damage_per_rich_agent/average_income_per_rich_agent
+            'EstimatedAverageIncomeToDamageRichHousehold'] = average_damage_per_rich_agent/average_income_per_rich_agent
 
         return AverageIncomeToDamageRatio
 
