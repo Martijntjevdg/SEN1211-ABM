@@ -27,9 +27,11 @@ class AdaptationModel(Model):
     def __init__(self, 
                  seed=None,
                  number_of_households=25, # number of household agents
-                 number_of_steps=20,
-                 subsidies_package=0,
+                 number_of_steps=80, #maximum number of steps (20 years in total, 1 step is quarter year)
+                 subsidies_package=0,#decides whether and which subsidies are applied in the model for the household agents
+                 #Standard distribution that decides the income for agents with random normal. Income_label:[mean,std_dv]
                  income_distribution={'Poor': [5000, 1875], 'Middle-Class': [29375, 10312], 'Rich': [87500, 18750]},
+                 #Standard distribution that decides housesize for agents with random normal. Income_label:[mean, std_dv]
                  average_household_surfaces={'Poor': [100, 30], 'Middle-Class': [201.6, 50], 'Rich': [500, 200]},
                  # Simplified argument for choosing flood map. Can currently be "harvey", "100yr", or "500yr".
                  flood_map_choice='harvey',
@@ -52,9 +54,11 @@ class AdaptationModel(Model):
         self.subsidies_package = subsidies_package
         self.number_of_households = number_of_households  # Total number of household agents
         self.seed = seed
-        self.income_distribution = income_distribution
-        self.average_household_surfaces = average_household_surfaces
+        self.income_distribution = income_distribution #Can vary based on model parameter input
+        self.income_distribution_label = None #Used to store which income_label is used in a model for sensitivity analysis
+        self.average_household_surfaces = average_household_surfaces #Can vary based on model parameter input
 
+        #This variable randomly decides when the flood occurs between the parameters given
         self.flood_step = self.random.randint(1, number_of_steps)
 
         # network
@@ -92,7 +96,8 @@ class AdaptationModel(Model):
                         "TotalAdaptationCosts":self.total_adaptation_costs,
                         "TotalCostsOfSubsidies":self.total_subsidies_costs,
                         "AverageDamagePerIncomeLabel":self.calculate_damage_per_agent_per_income_label,
-                        "AverageIncomeToDamageRatio":self.calculate_average_income_to_damage_ratio
+                        "AverageIncomeToDamageRatio":self.calculate_average_income_to_damage_ratio,
+                        "IncomeDistribution":self.save_income_distribution_label
                         # ... other reporters ...
                         }
         
@@ -171,6 +176,25 @@ class AdaptationModel(Model):
         self.band_flood_img, self.bound_left, self.bound_right, self.bound_top, self.bound_bottom = get_flood_map_data(
             self.flood_map)
 
+
+    def save_income_distribution_label(self):
+        """
+        Function used to save model data.
+        Checks what the income_distribution is in the model parameter space and saves the label accordingly
+        Mainly used for sensitivity analysis
+        """
+        if self.income_distribution == {'Poor': [5000, 1875], 'Middle-Class': [29375, 10312], 'Rich': [87500, 18750]}:
+            income_distribution_label = 'Base'
+        if self.income_distribution == {'Poor': [5500, 1875], 'Middle-Class': [32312.5, 10321], 'Rich': [96250, 18750]}:
+            income_distribution_label = 'Plus10'
+        if self.income_distribution == {'Poor': [4500, 1875], 'Middle-Class': [26437.5, 10321], 'Rich': [78750, 18750]}:
+            income_distribution_label = 'Minus10'
+        if self.income_distribution == {'Poor': [6500, 1875], 'Middle-Class': [38187.5, 10321], 'Rich': [133750, 18750]}:
+            income_distribution_label = 'Plus30'
+        if self.income_distribution == {'Poor': [3500, 1875], 'Middle-Class': [20562.5, 10321], 'Rich': [61250, 18750]}:
+            income_distribution_label = 'Minus30'
+
+        return income_distribution_label
     def total_adapted_households(self):
         """Return the total number of households that have adapted."""
         #BE CAREFUL THAT YOU MAY HAVE DIFFERENT AGENT TYPES SO YOU NEED TO FIRST CHECK IF THE AGENT IS ACTUALLY A HOUSEHOLD AGENT USING "ISINSTANCE"
@@ -178,22 +202,29 @@ class AdaptationModel(Model):
         return adapted_count
 
     def total_actual_damage(self):
+        """"Return the total damaged experienced after a flood occured by all agents"""
         total_actual_damage = sum(agent.flood_damage_actual for agent in self.schedule.agents)
         return total_actual_damage
 
     def total_expected_damage(self):
+        """"Return the total expected damage summed for all agents"""
         total_expected_damage = sum(agent.flood_damage_estimated for agent in self.schedule.agents)
         return total_expected_damage
 
     def total_adaptation_costs(self):
+        """"Return the total adaptation costs summed for all agents"""
         total_adaptation_costs = sum(agent.cost_of_adaptation for agent in self.schedule.agents)
         return total_adaptation_costs
 
     def total_subsidies_costs(self):
+        """"Return the total cost of subsidies spent by all agents"""
         total_cost_of_subsidies = sum(agent.subsidies_received for agent in self.schedule.agents)
         return total_cost_of_subsidies
 
     def calculate_damage_per_agent_per_income_label(self):
+        """
+        Function to calculate the average damage per income label for the agents
+        """
         #Dictionary with the three labels and their respective average damage per agent in that label
         damage_per_agent_per_income_label = {}
 
@@ -202,10 +233,12 @@ class AdaptationModel(Model):
         middle_class_agents = [agent for agent in self.schedule.agents if agent.income_label == 'Middle-Class']
         rich_agents = [agent for agent in self.schedule.agents if agent.income_label == 'Rich']
 
+        #Calculate the total damage per income label for all agents
         total_damage_poor_agents = sum(agent.flood_damage_actual for agent in self.schedule.agents if agent.income_label == 'Poor')
         total_damage_middle_class_agents = sum(agent.flood_damage_actual for agent in self.schedule.agents if agent.income_label == 'Middle-Class')
         total_damage_rich_agents = sum(agent.flood_damage_actual for agent in self.schedule.agents if agent.income_label == 'Rich')
 
+        #Calculate the average damage per agent of income class by dividing it with the number of agents of that income class in the model
         average_damage_per_poor_agent = total_damage_poor_agents/len(poor_agents)
         average_damage_per_middle_class_agent = total_damage_middle_class_agents/len(middle_class_agents)
         if len(rich_agents) > 0:
@@ -213,10 +246,13 @@ class AdaptationModel(Model):
         else:
             return 'No Rich Agents in the model'
 
+        #Append the values into the empty dictionary created at the beginning
         damage_per_agent_per_income_label['AverageDamagePerPoorHousehold'] = average_damage_per_poor_agent
         damage_per_agent_per_income_label['AverageDamagePerMiddleClassHousehold'] = average_damage_per_middle_class_agent
         damage_per_agent_per_income_label['AverageDamagePerRichHousehold'] = average_damage_per_rich_agent
 
+        #The values are returned as a dictionary which will later be unpacked after the model has been run
+        #This dictionary is unpacked into three seperate columns for each income label
         return damage_per_agent_per_income_label
 
     def calculate_average_income_to_damage_ratio(self):
@@ -228,6 +264,7 @@ class AdaptationModel(Model):
         middle_class_agents = [agent for agent in self.schedule.agents if agent.income_label == 'Middle-Class']
         rich_agents = [agent for agent in self.schedule.agents if agent.income_label == 'Rich']
 
+        #Calculate the total damage per income label for all agents
         total_damage_poor_agents = sum(
             agent.flood_damage_actual for agent in self.schedule.agents if agent.income_label == 'Poor')
         total_damage_middle_class_agents = sum(
@@ -235,6 +272,7 @@ class AdaptationModel(Model):
         total_damage_rich_agents = sum(
             agent.flood_damage_actual for agent in self.schedule.agents if agent.income_label == 'Rich')
 
+        #Calculate the total income per income label for all agents of that income label
         total_income_poor_agents = sum(
             agent.income for agent in self.schedule.agents if agent.income_label == 'Poor')
         total_income_middle_class_agents = sum(
@@ -242,6 +280,7 @@ class AdaptationModel(Model):
         total_income_rich_agents = sum(
             agent.income for agent in self.schedule.agents if agent.income_label == 'Rich')
 
+        #Calulcate the average damage per income label by dividing the total damage per income label by the number of agents with that income label
         average_damage_per_poor_agent = total_damage_poor_agents / len(poor_agents)
         average_damage_per_middle_class_agent = total_damage_middle_class_agents / len(middle_class_agents)
         if len(rich_agents) > 0:
@@ -249,6 +288,7 @@ class AdaptationModel(Model):
         else:
             return 'No Rich Agents in the model'
 
+        #Calulcate the average damage per income label by dividing the total damage per income label by the number of agents with that income label
         average_income_per_poor_agent = total_income_poor_agents / len(poor_agents)
         average_income_per_middle_class_agent = total_income_middle_class_agents / len(middle_class_agents)
         if len(rich_agents) > 0:
@@ -256,6 +296,9 @@ class AdaptationModel(Model):
         else:
             return 'No Rich Agents in the model'
 
+        #Calculate the average income to damage ratio by dividing average damage per agent / income class with the income
+        #This shows the damage in relation to income, which is a way to calculate inequality
+        #The higher
         AverageIncomeToDamageRatio[
             'AverageIncomeToDamagePoorHousehold'] = average_damage_per_poor_agent/average_income_per_poor_agent
         AverageIncomeToDamageRatio[
