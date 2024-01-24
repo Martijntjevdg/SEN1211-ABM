@@ -96,7 +96,9 @@ class AdaptationModel(Model):
                         "TotalAdaptationCosts":self.total_adaptation_costs,
                         "TotalCostsOfSubsidies":self.total_subsidies_costs,
                         "AverageDamagePerIncomeLabel":self.calculate_damage_per_agent_per_income_label,
+                        "EstimatedAverageDamagePerIncomeLabel": self.calculate_estimated_damage_per_agent_per_income_label,
                         "AverageIncomeToDamageRatio":self.calculate_average_income_to_damage_ratio,
+                        "EstimatedAverageIncomeToDamageRatio":self.calculate_estimated_average_income_to_damage_ratio,
                         "IncomeDistribution":self.save_income_distribution_label
                         # ... other reporters ...
                         }
@@ -255,6 +257,40 @@ class AdaptationModel(Model):
         #This dictionary is unpacked into three seperate columns for each income label
         return damage_per_agent_per_income_label
 
+    def calculate_estimated_damage_per_agent_per_income_label(self):
+        """
+        Function to calculate the average damage per income label for the agents
+        """
+        #Dictionary with the three labels and their respective average damage per agent in that label
+        damage_per_agent_per_income_label = {}
+
+        #Create subsets of all the agents within the model based on income_label
+        poor_agents = [agent for agent in self.schedule.agents if agent.income_label == 'Poor']
+        middle_class_agents = [agent for agent in self.schedule.agents if agent.income_label == 'Middle-Class']
+        rich_agents = [agent for agent in self.schedule.agents if agent.income_label == 'Rich']
+
+        #Calculate the total damage per income label for all agents
+        total_damage_poor_agents = sum(agent.flood_damage_estimated for agent in self.schedule.agents if agent.income_label == 'Poor')
+        total_damage_middle_class_agents = sum(agent.flood_damage_estimated for agent in self.schedule.agents if agent.income_label == 'Middle-Class')
+        total_damage_rich_agents = sum(agent.flood_damage_estimated for agent in self.schedule.agents if agent.income_label == 'Rich')
+
+        #Calculate the average damage per agent of income class by dividing it with the number of agents of that income class in the model
+        average_damage_per_poor_agent = total_damage_poor_agents/len(poor_agents)
+        average_damage_per_middle_class_agent = total_damage_middle_class_agents/len(middle_class_agents)
+        if len(rich_agents) > 0:
+            average_damage_per_rich_agent = total_damage_rich_agents/len(rich_agents)
+        else:
+            return 'No Rich Agents in the model'
+
+        #Append the values into the empty dictionary created at the beginning
+        damage_per_agent_per_income_label['AverageDamagePerPoorHousehold'] = average_damage_per_poor_agent
+        damage_per_agent_per_income_label['AverageDamagePerMiddleClassHousehold'] = average_damage_per_middle_class_agent
+        damage_per_agent_per_income_label['AverageDamagePerRichHousehold'] = average_damage_per_rich_agent
+
+        #The values are returned as a dictionary which will later be unpacked after the model has been run
+        #This dictionary is unpacked into three seperate columns for each income label
+        return damage_per_agent_per_income_label
+
     def calculate_average_income_to_damage_ratio(self):
         # Dictionary with the three labels and their respective average damage per agent in that label
         AverageIncomeToDamageRatio = {}
@@ -271,6 +307,59 @@ class AdaptationModel(Model):
             agent.flood_damage_actual for agent in self.schedule.agents if agent.income_label == 'Middle-Class')
         total_damage_rich_agents = sum(
             agent.flood_damage_actual for agent in self.schedule.agents if agent.income_label == 'Rich')
+
+        #Calculate the total income per income label for all agents of that income label
+        total_income_poor_agents = sum(
+            agent.income for agent in self.schedule.agents if agent.income_label == 'Poor')
+        total_income_middle_class_agents = sum(
+            agent.income for agent in self.schedule.agents if agent.income_label == 'Middle-Class')
+        total_income_rich_agents = sum(
+            agent.income for agent in self.schedule.agents if agent.income_label == 'Rich')
+
+        #Calulcate the average damage per income label by dividing the total damage per income label by the number of agents with that income label
+        average_damage_per_poor_agent = total_damage_poor_agents / len(poor_agents)
+        average_damage_per_middle_class_agent = total_damage_middle_class_agents / len(middle_class_agents)
+        if len(rich_agents) > 0:
+            average_damage_per_rich_agent = total_damage_rich_agents / len(rich_agents)
+        else:
+            return 'No Rich Agents in the model'
+
+        #Calulcate the average damage per income label by dividing the total damage per income label by the number of agents with that income label
+        average_income_per_poor_agent = total_income_poor_agents / len(poor_agents)
+        average_income_per_middle_class_agent = total_income_middle_class_agents / len(middle_class_agents)
+        if len(rich_agents) > 0:
+            average_income_per_rich_agent = total_income_rich_agents / len(rich_agents)
+        else:
+            return 'No Rich Agents in the model'
+
+        #Calculate the average income to damage ratio by dividing average damage per agent / income class with the income
+        #This shows the damage in relation to income, which is a way to calculate inequality
+        #The higher
+        AverageIncomeToDamageRatio[
+            'AverageIncomeToDamagePoorHousehold'] = average_damage_per_poor_agent/average_income_per_poor_agent
+        AverageIncomeToDamageRatio[
+            'AverageIncomeToDamageMiddleClassHousehold'] = average_damage_per_middle_class_agent/average_income_per_middle_class_agent
+        AverageIncomeToDamageRatio[
+            'AverageIncomeToDamageRichHousehold'] = average_damage_per_rich_agent/average_income_per_rich_agent
+
+        return AverageIncomeToDamageRatio
+
+    def calculate_estimated_average_income_to_damage_ratio(self):
+        # Dictionary with the three labels and their respective average damage per agent in that label
+        AverageIncomeToDamageRatio = {}
+
+        # Create subsets of all the agents within the model based on income_label
+        poor_agents = [agent for agent in self.schedule.agents if agent.income_label == 'Poor']
+        middle_class_agents = [agent for agent in self.schedule.agents if agent.income_label == 'Middle-Class']
+        rich_agents = [agent for agent in self.schedule.agents if agent.income_label == 'Rich']
+
+        #Calculate the total damage per income label for all agents
+        total_damage_poor_agents = sum(
+            agent.flood_damage_estimated for agent in self.schedule.agents if agent.income_label == 'Poor')
+        total_damage_middle_class_agents = sum(
+            agent.flood_damage_estimated for agent in self.schedule.agents if agent.income_label == 'Middle-Class')
+        total_damage_rich_agents = sum(
+            agent.flood_damage_estimated for agent in self.schedule.agents if agent.income_label == 'Rich')
 
         #Calculate the total income per income label for all agents of that income label
         total_income_poor_agents = sum(
