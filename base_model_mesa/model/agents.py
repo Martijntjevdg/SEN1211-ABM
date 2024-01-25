@@ -152,12 +152,16 @@ class Households(Agent):
 
         self.network = network
         value_counts = Counter(network.values())
-        most_common_value, count = value_counts.most_common(1)[0]
-        self.network_flood_perception = most_common_value
+        if len(value_counts) > 0:
+            most_common_value, count = value_counts.most_common(1)[0]
+            self.network_flood_perception = most_common_value
+        else:
+            self.network_flood_perception = None
+
 
     def change_own_flood_perception(self):
         # These variables are random integers between 1 and 4 at the moment
-        if self.network_flood_perception != self.own_flood_perception:
+        if self.network_flood_perception != self.own_flood_perception and self.network_flood_perception is not None:
             self.own_flood_perception = self.network_flood_perception
         return self.own_flood_perception
 
