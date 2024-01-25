@@ -98,8 +98,7 @@ class AdaptationModel(Model):
                         "AverageDamagePerIncomeLabel":self.calculate_damage_per_agent_per_income_label,
                         "EstimatedAverageDamagePerIncomeLabel": self.calculate_estimated_damage_per_agent_per_income_label,
                         "AverageIncomeToDamageRatio":self.calculate_average_income_to_damage_ratio,
-                        "EstimatedAverageIncomeToDamageRatio":self.calculate_estimated_average_income_to_damage_ratio,
-                        "IncomeDistribution":self.save_income_distribution_label
+                        "EstimatedAverageIncomeToDamageRatio":self.calculate_estimated_average_income_to_damage_ratio
                         # ... other reporters ...
                         }
         
@@ -178,25 +177,6 @@ class AdaptationModel(Model):
         self.band_flood_img, self.bound_left, self.bound_right, self.bound_top, self.bound_bottom = get_flood_map_data(
             self.flood_map)
 
-
-    def save_income_distribution_label(self):
-        """
-        Function used to save model data.
-        Checks what the income_distribution is in the model parameter space and saves the label accordingly
-        Mainly used for sensitivity analysis
-        """
-        if self.income_distribution == {'Poor': [5000, 1875], 'Middle-Class': [29375, 10312], 'Rich': [87500, 18750]}:
-            income_distribution_label = 'Base'
-        if self.income_distribution == {'Poor': [5500, 1875], 'Middle-Class': [32312.5, 10321], 'Rich': [96250, 18750]}:
-            income_distribution_label = 'Plus10'
-        if self.income_distribution == {'Poor': [4500, 1875], 'Middle-Class': [26437.5, 10321], 'Rich': [78750, 18750]}:
-            income_distribution_label = 'Minus10'
-        if self.income_distribution == {'Poor': [6500, 1875], 'Middle-Class': [38187.5, 10321], 'Rich': [133750, 18750]}:
-            income_distribution_label = 'Plus30'
-        if self.income_distribution == {'Poor': [3500, 1875], 'Middle-Class': [20562.5, 10321], 'Rich': [61250, 18750]}:
-            income_distribution_label = 'Minus30'
-
-        return income_distribution_label
     def total_adapted_households(self):
         """Return the total number of households that have adapted."""
         #BE CAREFUL THAT YOU MAY HAVE DIFFERENT AGENT TYPES SO YOU NEED TO FIRST CHECK IF THE AGENT IS ACTUALLY A HOUSEHOLD AGENT USING "ISINSTANCE"
