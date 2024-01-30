@@ -4,7 +4,6 @@ from mesa import Model, Agent
 from mesa.time import RandomActivation, BaseScheduler
 from mesa.space import NetworkGrid
 from mesa.datacollection import DataCollector
-import geopandas as gpd
 import rasterio as rs
 import matplotlib.pyplot as plt
 import random
@@ -419,6 +418,7 @@ class AdaptationModel(Model):
 
                 self.running = False
 
+        #Save model variables before collecting in the datacollector
         self.total_adapted_households()
         self.total_actual_damage()
         self.total_expected_damage()
